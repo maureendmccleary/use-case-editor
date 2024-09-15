@@ -69,9 +69,9 @@ const fileopts = {
 };
 
 // the use case object loaded to or saved from the file. Contains all use case data.
-var uc = {"steps": [], "stepCount" : 1};
+var uc = { "steps": [], "stepCount": 1 };
 let fileHandle;
-  
+
 // fills a listbox with various types of use case-centric objects: scores, operating systems, assistive technologies
 function fillListbox(jobj, listboxid) {
     let lbx = document.getElementById(listboxid);
@@ -135,7 +135,6 @@ async function loadFileButtonClick(e) {
         if (i === 0) {
             document.getElementById("uc-step-contents[0]").value = uc.steps[i].text;
         } else {
-            console.log("uc.stepCount: " + uc.stepCount + " i: " + i);
             addStep2Perform(uc, i, "ucEditor");
         }
     }
@@ -166,6 +165,7 @@ function performButtonClick(e) {
     for (let i = 0; i < uc.steps.length; i++) {
         if (i === 0) {
             document.getElementById("uc-perform-step-contents[0]").value = uc.steps[i].text;
+            document.getElementById("uc-perform-step-results[0]").addEventListener("blur", blurFormField);
         } else {
             addStep2Perform(uc, i, "ucPerformDialog");
         }
@@ -183,9 +183,40 @@ function addIssueButtonClick(e) {
     addIssueDialog.showModal();
     addIssueClose.addEventListener("click", (e) => {
         e.preventDefault();
+        if (uc.steps[0].issues && uc.steps[0].issues.length > 0) {
+            console.log("Changing add issue button to view issue");
+            document.getElementById("uc-add-issue[0]").innerHTML = "View Issue";
+        }
         addIssueDialog.close();
     });
-    fillListbox(defaults["scores"], "uc-issue-score[0]");
+    var stepNumbers = Array.from({ length: uc.stepCount }, (_, i) => i + 1);
+    fillListbox(stepNumbers, "add-issue-step");
+    stepNumbers = document.getElementById("add-issue-step");
+    var targetStep = getStepNumber(e.target.id); 
+    targetStep++;
+    for (var i = 0; i < stepNumbers.length; i++) {
+        console.log("targetStep = " + targetStep + " getStepNumber() = " + getStepNumber(e.target.id) + " stepNumbers[i].textContent = " + stepNumbers[i].textContent);
+        if (targetStep == stepNumbers[i].textContent) {
+            stepNumbers[i].selected = true;
+            console.log("selecting step");
+        }
+    }
+    fillListbox(defaults["scores"], "add-issue-score");
+    let save = document.getElementById("add-issue-dialog-save");
+    save.addEventListener("click", saveIssueButtonClick);
+    let next = document.getElementById("add-issue-dialog-next");
+    next.addEventListener("click", saveIssueButtonClick);
+}
+
+function saveIssueButtonClick(e) {
+    e.preventDefault();
+    let newIssue = {};
+    newIssue.description = document.getElementById("add-issue-description").value;
+    newIssue.findingURL = document.getElementById("add-issue-findingURL").value;
+    newIssue.score = document.getElementById("add-issue-score").value;
+    console.log(newIssue);
+    uc.steps[0].issues.push(newIssue);
+    console.log(uc.steps[0].issues);
 }
 
 function addStepButtonClick(e) {
@@ -196,29 +227,30 @@ function addStepButtonClick(e) {
     form.appendChild(br);
     var newStepLabel = document.createElement('LABEL');
     uc.stepCount++;
-	newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
-	console.log(newStepLabel.value);
+    newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
     var newStep = document.createElement('INPUT');
-	var stepId = makeStepId("ucEditor");
-	console.log("stepId = " + stepId);
+    var stepId = makeStepId("ucEditor");
     newStep.setAttribute("id", stepId);
     newStep.setAttribute("name", "steps");
     newStep.addEventListener('blur', blurFormField);
     newStepLabel.setAttribute("for", stepId);
-    form.appendChild(newStepLabel);
-    form.appendChild(newStep);
+    var ucDiv = document.createElement('DIV');
+    ucDiv.appendChild(newStepLabel);
+    ucDiv.appendChild(newStep);
+    form.appendChild(ucDiv);
+    form.appendChild(br);
+    form.appendChild(br);
     document.getElementById(newStep.id).focus();
-    form.appendChild(br);
-    form.appendChild(br);
 }
 
 function addStep2Perform(uc, i, formName) {
     var form = document.forms[formName];
     var br = document.createElement("br");
+    var ucDiv = document.createElement("DIV");
     form.appendChild(br);
     form.appendChild(br);
     var newStepLabel = document.createElement('LABEL');
-    let stepNumber = i; 
+    let stepNumber = i;
     newStepLabel.textContent = "Step " + ++stepNumber + " ";
     var newStep = document.createElement('INPUT');
     if (formName === "ucEditor") {
@@ -231,10 +263,8 @@ function addStep2Perform(uc, i, formName) {
     newStep.value = uc.steps[i].text;
     newStep.addEventListener('blur', blurFormField);
     newStepLabel.setAttribute("for", newStep.id);
-    form.appendChild(newStepLabel);
-    form.appendChild(newStep);
-    form.appendChild(br);
-    form.appendChild(br);
+    ucDiv.appendChild(newStepLabel);
+    ucDiv.appendChild(newStep);
     if (formName === "ucPerformDialog") {
         var stepResultsLabel = document.createElement('LABEL');
         stepResultsLabel.textContent = "Step " + stepNumber + " results";
@@ -244,23 +274,23 @@ function addStep2Perform(uc, i, formName) {
         stepResultsLabel.setAttribute("for", stepResultsId);
         stepResults.setAttribute("name", "results");
         stepResults.addEventListener('blur', blurFormField);
-        form.appendChild(stepResultsLabel);
-        form.appendChild(stepResults);
+        ucDiv.appendChild(stepResultsLabel);
+        ucDiv.appendChild(stepResults);
         var addIssueButton = document.createElement('BUTTON');
         addIssueButton.innerText = "Add Issue";
         addIssueButton.addEventListener('click', addIssueButtonClick);
         addIssueButton.setAttribute("id", "uc-add-issue[" + i + "]");
-        form.appendChild(addIssueButton);
-        form.appendChild(br);
-        form.appendChild(br);
+        ucDiv.appendChild(addIssueButton);
     }
+    form.appendChild(ucDiv);
+    form.appendChild(br);
+    form.appendChild(br);
 }
 
 function makeStepId(formName) {
-	let len = uc.steps.length;
-	if (formName === "ucEditor") {
-		console.log("uc-step-contents[" + len + "]");
-       return "uc-step-contents[" + len + "]";
+    let len = uc.steps.length;
+    if (formName === "ucEditor") {
+        return "uc-step-contents[" + len + "]";
     } else {
         return "uc-perform-step-contents[" + len + "]";
     }
@@ -275,13 +305,9 @@ function getStepNumber(stepId) {
 
 function blurFormField(e) {
     if (e.target.name === "steps") {
-        uc["steps"][getStepNumber(e.target.id)] = {text: "", results: "", issues: []};
         uc["steps"][getStepNumber(e.target.id)].text = e.target.value;
     } else if (e.target.name === "results") {
         uc.steps[getStepNumber(e.target.id)].results = e.target.value;
-        console.log(e.target.id);
-        console.log(uc["steps"][getStepNumber(e.target.id)]);
-        console.log(e.target.value);
     } else {
         uc[e.target.name] = e.target.value;
     }
@@ -321,7 +347,6 @@ function addFormEvents() {
 
 function copyToClipboard(e) {
     var ucText = JSON.stringify(uc);
-    console.log(ucText);
     navigator.clipboard.writeText(ucText).then(() => {
         console.log('Text copied to clipboard');
     }).catch(err => {

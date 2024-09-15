@@ -78,31 +78,34 @@
     <label id=" uc-step-score-label" for="uc-step-score">Score: </label>
     <select name="scores" id="uc-step-score"></select>
     <button id="uc-perform-submit">Submit</button>
-  </dialog>
 
-  <dialog id="add-issue-dialog" aria-labelledby="add-issue-dialog-title">
-    <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
-      <div>
-        <button autofocus id="add-issue-dialog-close">close</button>
-        <h2 id="add-issue-dialog-title">Add Issue</h2>
-        <br>
-        <label for="uc-issue-description[0]">Description</label>
-        <textarea id="uc-issue-description[0]" name="description"></textarea>
-        <br>
-        <br>
-        <label for="uc-issue-url[0]">Report finding url</label>
-        <input id="uc-issue-url[0]" name="url">
-        <br>
-        <br>
-        <label for="uc-issue-score[0]">Score: </label>
-        <select name="scores" id="uc-issue-score[0]"></select>
-        <br>
-        <br>
-        <button id="add-issue-dialog-save">Save issue</button>
-        <button id="add-issue-dialog-next">Next issue</button>
-      </div>
-    </form>
-  </dialog>
+    <dialog id="add-issue-dialog" aria-labelledby="add-issue-dialog-title">
+      <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
+        <div>
+          <button autofocus id="add-issue-dialog-close">close</button>
+          <h2 id="add-issue-dialog-title">Add Issue</h2>
+          <br>
+          <label for="add-issue-step">Step</label>          
+          <select name="stepNumber" id="add-issue-step"></select>
+          <br><br>
+          <label for="add-issue-description">Description</label>
+          <textarea id="add-issue-description" name="description"></textarea>
+          <br>
+          <br>
+          <label for="add-issue-url">Report finding url</label>
+          <input id="add-issue-findingURL" name="findingURL">
+          <br>
+          <br>
+          <label for="add-issue-score">Score: </label>
+          <select name="score" id="add-issue-score"></select>
+          <br>
+          <br>
+          <button id="add-issue-dialog-save">Save issue</button>
+          <button id="add-issue-dialog-next">Next issue</button>
+        </div>
+      </form>
+    </dialog>
   </dialog>
 </body>
+
 </html>
