@@ -150,7 +150,6 @@ function performButtonClick(e) {
         e.preventDefault();
         performDialog.close();
     });
-
     fillListbox(uc.oses, "uc-perform-oses");
     fillListbox(uc.ats, "uc-perform-ats");
     fillListbox(defaults["scores"], "uc-step-score");
@@ -164,7 +163,7 @@ function performButtonClick(e) {
     span.appendChild(a);
     for (let i = 0; i < uc.steps.length; i++) {
         if (i === 0) {
-            document.getElementById("uc-perform-step-contents[0]").value = uc.steps[i].text;
+            document.getElementById("uc-perform-step-contents[0]").textContent = uc.steps[i].text;
             document.getElementById("uc-perform-step-results[0]").addEventListener("blur", blurFormField);
         } else {
             addStep2Perform(uc, i, "ucPerformDialog");
@@ -192,7 +191,7 @@ function addIssueButtonClick(e) {
     var stepNumbers = Array.from({ length: uc.stepCount }, (_, i) => i + 1);
     fillListbox(stepNumbers, "add-issue-step");
     stepNumbers = document.getElementById("add-issue-step");
-    var targetStep = getStepNumber(e.target.id); 
+    var targetStep = getStepNumber(e.target.id);
     targetStep++;
     for (var i = 0; i < stepNumbers.length; i++) {
         console.log("targetStep = " + targetStep + " getStepNumber() = " + getStepNumber(e.target.id) + " stepNumbers[i].textContent = " + stepNumbers[i].textContent);
@@ -214,9 +213,11 @@ function saveIssueButtonClick(e) {
     newIssue.description = document.getElementById("add-issue-description").value;
     newIssue.findingURL = document.getElementById("add-issue-findingURL").value;
     newIssue.score = document.getElementById("add-issue-score").value;
-    console.log(newIssue);
-    uc.steps[0].issues.push(newIssue);
-    console.log(uc.steps[0].issues);
+    var step = document.getElementById("add-issue-step").value;
+    console.log("in add issue dialog step = " + step);
+    uc.steps[step].issues = []
+    uc.steps[step].issues.push(newIssue);
+    document.getElementById("add-issue-msg").innerHTML = "Issue successfully saved!";
 }
 
 function addStepButtonClick(e) {
@@ -249,32 +250,36 @@ function addStep2Perform(uc, i, formName) {
     var ucDiv = document.createElement("DIV");
     form.appendChild(br);
     form.appendChild(br);
-    var newStepLabel = document.createElement('LABEL');
     let stepNumber = i;
-    newStepLabel.textContent = "Step " + ++stepNumber + " ";
-    var newStep = document.createElement('INPUT');
     if (formName === "ucEditor") {
+        var newStepLabel = document.createElement('LABEL');
+        newStepLabel.textContent = "Step " + ++stepNumber + " ";
+        var newStep = document.createElement('TEXTAREA');
         var stepId = "uc-step-contents[" + i + "]";
+        newStep.setAttribute("id", stepId);
+        console.log("stepId = " + stepId)
+        newStepLabel.setAttribute('for', stepId);
+        newStep.value = uc.steps[i].text;
+        newStep.addEventListener('blur', blurFormField);
+        ucDiv.appendChild(newStepLabel);
+        ucDiv.appendChild(newStep);
     } else {
+        var newStepLabel = document.createElement('H3');
+        newStepLabel.textContent = ++stepNumber + ": ";
+        var stepLabelId = "uc-step-label[" + i + "]";
+        newStepLabel.setAttribute("id", stepLabelId);
+        var newStep = document.createElement('P');
         var stepId = "uc-perform-step-contents[" + i + "]";
-    }
-    newStep.setAttribute("id", stepId);
-    newStep.setAttribute("name", "steps");
-    newStep.value = uc.steps[i].text;
-    newStep.addEventListener('blur', blurFormField);
-    newStepLabel.setAttribute("for", newStep.id);
-    ucDiv.appendChild(newStepLabel);
-    ucDiv.appendChild(newStep);
-    if (formName === "ucPerformDialog") {
-        var stepResultsLabel = document.createElement('LABEL');
-        stepResultsLabel.textContent = "Step " + stepNumber + " results";
+        newStep.setAttribute("id", stepId);
+        newStep.textContent = uc.steps[i].text;
         var stepResults = document.createElement('TEXTAREA');
         var stepResultsId = "uc-perform-step-results[" + i + "]";
         stepResults.setAttribute("id", stepResultsId);
-        stepResultsLabel.setAttribute("for", stepResultsId);
         stepResults.setAttribute("name", "results");
+        stepResults.setAttribute('aria-labelledby', stepLabelId + " " + stepId);
         stepResults.addEventListener('blur', blurFormField);
-        ucDiv.appendChild(stepResultsLabel);
+        ucDiv.appendChild(newStepLabel);
+        ucDiv.appendChild(newStep);
         ucDiv.appendChild(stepResults);
         var addIssueButton = document.createElement('BUTTON');
         addIssueButton.innerText = "Add Issue";
