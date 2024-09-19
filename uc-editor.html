@@ -41,7 +41,7 @@
       <br>
       <br>
       <label for="uc-step-contents[0]">Step 1 </label>
-      <input type="text" id="uc-step-contents[0]" name="steps">
+      <textarea  id="uc-step-contents[0]" name="steps"></textarea>textarea>
       <br><br>
     </div>
   </form>
@@ -66,11 +66,10 @@
         <label for="uc-perform-ats">Assistive Technology Type: </label>
         <select name="ats" id="uc-perform-ats"></select>
         <br><br>
-        <label for="uc-perform-step-contents[0]">Step 1</label>
-        <input type="text" id="uc-perform-step-contents[0]" name="steps">
+        <h3 id="uc-perform-step-label[0]">1: </h3>
+        <p id="uc-perform-step-contents[0]" name="steps"></p>
         <br><br>
-        <label for="uc-perform-step-results[0]">Step 1 results</label>
-        <textarea id="uc-perform-step-results[0]" name="results"></textarea>
+        <textarea id="uc-perform-step-results[0]" aria-labelledby="uc-perform-step-label[0] uc-perform-step-contents[0]" name="results"></textarea>
         <button id="uc-add-issue[0]">Add Issue</button>
         <br><br>
       </div>
@@ -85,14 +84,15 @@
           <button autofocus id="add-issue-dialog-close">close</button>
           <h2 id="add-issue-dialog-title">Add Issue</h2>
           <br>
-          <label for="add-issue-step">Step</label>          
+          <p id="add-issue-msg" role="status" aria-live="assertive"></p>
+          <label for="add-issue-step">Step</label>
           <select name="stepNumber" id="add-issue-step"></select>
           <br><br>
           <label for="add-issue-description">Description</label>
           <textarea id="add-issue-description" name="description"></textarea>
           <br>
           <br>
-          <label for="add-issue-url">Report finding url</label>
+          <label for="add-issue-findingURL">Report finding url</label>
           <input id="add-issue-findingURL" name="findingURL">
           <br>
           <br>
