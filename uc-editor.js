@@ -69,7 +69,7 @@ const fileopts = {
 };
 
 // the use case object loaded to or saved from the file. Contains all use case data.
-var uc = { "steps": [], "stepCount": 1 };
+var uc = { "steps": [], "stepCount": 1};
 let fileHandle;
 
 // fills a listbox with various types of use case-centric objects: scores, operating systems, assistive technologies
@@ -224,18 +224,19 @@ function addStepButtonClick(e) {
     e.preventDefault();
     var form = document.forms["ucEditor"];
     var br = document.createElement('BR');
-    form.appendChild(br);
-    form.appendChild(br);
+    var ucDiv = document.createElement('DIV');
+    ucDiv.appendChild(br);
+    ucDiv.appendChild(br);
     var newStepLabel = document.createElement('LABEL');
     uc.stepCount++;
     newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
-    var newStep = document.createElement('INPUT');
+    var newStep = document.createElement('TEXTAREA');
     var stepId = makeStepId("ucEditor");
+    console.log("After adding a new step stepId=" + stepId);
     newStep.setAttribute("id", stepId);
     newStep.setAttribute("name", "steps");
     newStep.addEventListener('blur', blurFormField);
     newStepLabel.setAttribute("for", stepId);
-    var ucDiv = document.createElement('DIV');
     ucDiv.appendChild(newStepLabel);
     ucDiv.appendChild(newStep);
     form.appendChild(ucDiv);
@@ -293,8 +294,9 @@ function addStep2Perform(uc, i, formName) {
 }
 
 function makeStepId(formName) {
-    let len = uc.steps.length;
+    var len = uc.stepCount - 1; 
     if (formName === "ucEditor") {
+        console.log("In makeStepId: " + "uc-step-contents[" + len + "]");
         return "uc-step-contents[" + len + "]";
     } else {
         return "uc-perform-step-contents[" + len + "]";
@@ -310,7 +312,9 @@ function getStepNumber(stepId) {
 
 function blurFormField(e) {
     if (e.target.name === "steps") {
-        uc["steps"][getStepNumber(e.target.id)].text = e.target.value;
+        console.log("in blurFormFields: e.target.id = " + e.target.id);
+        uc.steps[getStepNumber(e.target.id)] = {};
+        uc.steps[getStepNumber(e.target.id)].text = e.target.value;
     } else if (e.target.name === "results") {
         uc.steps[getStepNumber(e.target.id)].results = e.target.value;
     } else {
