@@ -203,6 +203,7 @@ function addIssueButtonClick(e) {
     save.addEventListener("click", saveIssueButtonClick);
     let next = document.getElementById("add-issue-dialog-next");
     next.addEventListener("click", nextIssueButtonClick);
+    document.getElementById("add-issue-description").focus();
 }
 
 function toggleAddIssue(e) {
@@ -217,8 +218,10 @@ function toggleAddIssue(e) {
 
 function previousIssueButtonClick(e) {
     e.preventDefault();
+    document.getElementById("add-issue-msg").innerHTML = "Editing Issue " + parseInt(currentIssue) + 1;
     if (currentIssue === 0) {
         document.getElementById("add-issue-dialog-previous").setAttribute("disabled", true);
+        document.getElementById("add-issue-description").focus();
         return;
     }
     document.getElementById("add-issue-dialog-previous").removeAttribute("disabled");
@@ -226,7 +229,7 @@ function previousIssueButtonClick(e) {
     document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[currentIssue].description;
     document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[currentIssue].findingURL;
     document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[currentIssue].score;
-    document.getElementById("add-issue-msg").innerHTML = "Editing issue " + currentIssue;
+    document.getElementById("add-issue-description").focus();
 }
 
 function saveIssueButtonClick(e) {
@@ -238,25 +241,24 @@ function saveIssueButtonClick(e) {
     if (currentIssue === 0 && uc.steps[currentStep].issues === undefined) {
         uc.steps[currentStep].issues = [];
         uc.steps[currentStep].issues.push(newIssue);
-        insertIssueTable(newIssue); 
+        insertIssueTable(newIssue);
     }
-    var issueRow = issueTable.rows[currentIssue];
+    /*var issueRow = issueTable.rows[currentIssue];
     issueRow.cells[0].textContent = parseInt(currentIssue) + 1;
     issueRow.cells[1].textContent = newIssue.description;
     issueRow.cells[2].textContent = newIssue.findingURL;
-    issueRow.cells[3].textContent = newIssue.score;
-    currentIssue++;
-    document.getElementById("add-issue-msg").innerHTML = "Issue " + currentIssue + " successfully saved!";
+    issueRow.cells[3].textContent = newIssue.score;*/
+    document.getElementById("add-issue-msg").innerHTML = "Issue " + (currentIssue + 1) + " successfully saved!";
 }
 
 function insertIssueTable(newIssue) {
     var issueTable = document.getElementById("add-issue-table");
-    var row = issuesTable.insertRow(0);
+    var row = issueTable.insertRow(-1);
     var cell1 = row.insertCell(0);
     var cell2 = row.insertCell(1);
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
-    cell1.innerHTML = currentIssue;
+    cell1.innerHTML = currentIssue + 1;
     cell2.innerHTML = newIssue.description;
     cell3.innerHTML = newIssue.findingURL;
     cell4.innerHTML = newIssue.score;
@@ -264,19 +266,29 @@ function insertIssueTable(newIssue) {
 
 function nextIssueButtonClick(e) {
     e.preventDefault();
-    if (uc.steps[currentStep].issues && currentIssue === uc.steps[currentStep].issues.length) {
+    document.getElementById("add-issue-description").focus();
+    currentIssue++;
+    if (uc.steps[currentStep].issues && currentIssue === uc.steps[currentStep].issues.length - 1) {
         document.getElementById("add-issue-dialog-next").setAttribute("disabled", true);
+        document.getElementById("add-issue-msg").innerHTML = "Enter new issue";
         document.getElementById("add-issue-description").value = "";
         document.getElementById("add-issue-findingURL").value = "";
         document.getElementById("add-issue-score").value = 0;
-        document.getElementById("add-issue-msg").innerHTML = "Enter new issue";
+        let newIssue = {};
+        newIssue.description = document.getElementById("add-issue-description").value;
+        newIssue.findingURL = document.getElementById("add-issue-findingURL").value;
+        newIssue.score = document.getElementById("add-issue-score").value;
+        insertIssueTable(newIssue);
+        uc.steps[currentStep].issues.push(newIssue);
     }
-    document.getElementById("add-issue-dialog-next").removeAttribute("disabled");
-    document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[currentIssue].description;
-    document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[currentIssue].findingURL;
-    document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[currentIssue].score;
-    document.getElementById("add-issue-msg").innerHTML = "";
-    currentIssue++;
+    else {
+        document.getElementById("add-issue-dialog-next").removeAttribute("disabled");
+        document.getElementById("add-issue-msg").innerHTML = "Editing issue " + parseInt(currentIssue) + 1;
+        document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[currentIssue].description;
+        document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[currentIssue].findingURL;
+        document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[currentIssue].score;
+        currentIssue++;
+    }
 }
 
 function addStepButtonClick(e) {
