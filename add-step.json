@@ -1,0 +1,1 @@
+{"steps":[{"instructions":"Fill in form"},{"instructions":"Activate add step."},{"instructions":"Fill in new step."},{"instructions":"Continue adding and filling out steps until use case script is complete."},{"instructions":"Activate save."}],"stepCount":5,"name":"Add Step","goal":"Add multiple steps","startlocation":"www.use-case-testers.com","oses":["Windows"],"ats":["NVDA"]}
