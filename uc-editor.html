@@ -40,8 +40,8 @@
     <div id="uc-step">
       <br>
       <br>
-      <label for="uc-step-contents[0]">Step 1 </label>
-      <textarea  id="uc-step-contents[0]" name="steps"></textarea>
+      <label for="uc-step-contents[0]" style="vertical-align:top;">Step 1 </label>
+      <textarea id="uc-step-contents[0]" name="steps"></textarea>
       <br><br>
     </div>
   </form>
@@ -69,7 +69,8 @@
         <h3 id="uc-perform-step-label[0]">1: </h3>
         <p id="uc-perform-step-contents[0]" name="steps"></p>
         <br><br>
-        <textarea id="uc-perform-step-results[0]" aria-labelledby="uc-perform-step-label[0] uc-perform-step-contents[0]" name="results"></textarea>
+        <textarea id="uc-perform-step-results[0]" aria-labelledby="uc-perform-step-label[0] uc-perform-step-contents[0]"
+          name="results"></textarea>
         <button id="uc-add-issue[0]">Add Issue</button>
         <br><br>
       </div>
@@ -85,10 +86,20 @@
           <h2 id="add-issue-dialog-title">Add Issue</h2>
           <br>
           <p id="add-issue-msg" role="status" aria-live="assertive"></p>
+          <br>
+          <table id="add-issue-table">
+            <tr>
+              <th scope="col">Issue Number</th>
+              <th scope="col">Description</th>
+              <th scope="col">Finding URL</th>
+              <th scope="col">Score</th>
+            </tr>
+          </table>
+          <br>
           <label for="add-issue-step">Step</label>
           <select name="stepNumber" id="add-issue-step"></select>
           <br><br>
-          <label for="add-issue-description">Description</label>
+          <label for="add-issue-description" style="vertical-align: top;">Description</label>
           <textarea id="add-issue-description" name="description"></textarea>
           <br>
           <br>
@@ -100,8 +111,9 @@
           <select name="score" id="add-issue-score"></select>
           <br>
           <br>
-          <button id="add-issue-dialog-save">Save issue</button>
-          <button id="add-issue-dialog-next">Next issue</button>
+          <button id="add-issue-dialog-previous">Previous</button>
+          <button id="add-issue-dialog-save">Save</button>
+          <button id="add-issue-dialog-next">Next</button>
         </div>
       </form>
     </dialog>
