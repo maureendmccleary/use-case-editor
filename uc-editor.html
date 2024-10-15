@@ -66,12 +66,12 @@
         <label for="uc-perform-ats">Assistive Technology Type: </label>
         <select name="ats" id="uc-perform-ats"></select>
         <br><br>
-        <h3 id="uc-perform-step-label[0]">1: </h3>
+        <h3 id="uc-perform-step-label[0]">1 </h3>
         <p id="uc-perform-step-contents[0]" name="steps"></p>
         <br><br>
         <textarea id="uc-perform-step-results[0]" aria-labelledby="uc-perform-step-label[0] uc-perform-step-contents[0]"
           name="results"></textarea>
-        <button id="uc-add-issue[0]">Add Issue</button>
+        <button id="uc-add-issue[0]" aria-labelledby="uc-add-issue[0] uc-perform-step-label[0]">Add Issue</button>
         <br><br>
       </div>
     </form>
@@ -83,10 +83,13 @@
       <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
         <div>
           <button autofocus id="add-issue-dialog-close">close</button>
-          <h2 id="add-issue-dialog-title">Add Issue</h2>
+          <h2 id="add-issue-dialog-title"></h2>
           <br>
           <p id="add-issue-msg" role="status" aria-live="assertive"></p>
-          <br>
+          <br><br>
+          <h3 id="add-issue-step-label"></h3>
+          <p id="add-issue-step"></p>
+          <br><br>
           <table id="add-issue-table">
             <tr>
               <th scope="col">Issue Number</th>
@@ -95,9 +98,6 @@
               <th scope="col">Score</th>
             </tr>
           </table>
-          <br>
-          <label for="add-issue-step">Step</label>
-          <select name="stepNumber" id="add-issue-step"></select>
           <br><br>
           <label for="add-issue-description" style="vertical-align: top;">Description</label>
           <textarea id="add-issue-description" name="description"></textarea>
