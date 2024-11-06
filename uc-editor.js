@@ -181,20 +181,21 @@ function addIssueButtonClick(e) {
     const addIssueDialog = document.getElementById("add-issue-dialog");
     const addIssueClose = document.getElementById("add-issue-dialog-close");
     addIssueDialog.showModal();
-    addIssueDialog.addEventListener("keydown", (e) => {
-        if (e.key === "Escape") {
+    /*addIssueDialog.addEventListener("keydown", (e) => {
+        if (e.keyCode === 27) {
             toggleAddIssue(e, addIssueDialog);
         }
-    });
-
+    });*/
     addIssueClose.addEventListener("click", toggleAddIssue);
-    var heading = document.getElementById("add-issue-dialog-title");
+    var stepNumbers = Array.from({ length: uc.stepCount }, (_, i) => i + 1);
+    fillListbox(stepNumbers, "add-issue-step");
+    stepNumbers = document.getElementById("add-issue-step");
     currentStep = getStepNumber(e.target.id);
-    heading.innerHTML = document.getElementById(e.target.id).textContent + " Step " + (currentStep + 1);
-    document.getElementById("add-issue-step-label").innerHTML = "Step " + String(currentStep + 1);
-    document.getElementById("add-issue-step").innerHTML = uc.steps[currentStep].instructions;
-    currentIssue = 0;
-    updateIssueTable();
+    for (var i = 0; i < stepNumbers.length; i++) {
+        if ((currentStep + 1) === stepNumbers[i].textContent) {
+            stepNumbers[i].selected = true;
+        }
+    }
     fillListbox(defaults["scores"], "add-issue-score");
     let previous = document.getElementById("add-issue-dialog-previous");
     previous.addEventListener("click", previousIssueButtonClick);
@@ -215,52 +216,6 @@ function toggleAddIssue(e) {
     dialog.close();
 }
 
-function updateIssueTable() {
-    var issueTable = document.getElementById("add-issue-table");
-    var rows = issueTable.rows;
-    if (uc.steps[currentStep].issues.length === 0
-        && rows.length === 1) {
-        console.log("No issues and empty table");
-        return;
-    }
-    else
-        if (uc.steps[currentStep].issues.length === 0) {
-            deleteIssueTable(issueTable);
-            console.log("No issues and deleted previous issues from table");
-            return;
-        }
-        else if ((uc.steps[currentStep].issues.length + 1) !== rows.length) {
-            copyIssues2Table(issueTable);
-            console.log("UpdateIssueTable: Number of issues != table rows");
-            console.log(`# issues: ${uc.steps[currentStep].issues.length} != table rows ${rows.length}`);
-            return;
-        }
-
-    for (let i = 0; i < rows.length; i++) {
-        var row = rows[i + 1];
-        var cells = row.cells;
-        if (uc.steps[currentStep].issues[i].description !== cells[1].innerHTML
-            || uc.steps[currentStep].issues[i].findingURL !== cells[2].innerHTML
-            || uc.steps[currentStep].issues[i].score !== cells[3].innerHTML) {
-            console.log("issue != table row");
-            console.log(`${cells[0].innerHTML} ${cells[1].innerHTML} ${cells[2].innerHTML} ${cells[3].innerHTML}`);
-            copyIssues2Table(issueTable);
-        }
-    }
-}
-
-function deleteIssueTable(issueTable) {
-    var rows = issueTable.rows;
-
-    for (let i = 1; i < rows.length; i++) {
-        issueTable.deleteRow(i);
-    }
-    document.getElementById("add-issue-description").value = "";
-    document.getElementById("add-issue-findingURL").value = "";
-    document.getElementById("add-issue-score").value = 0;
-    return;
-}
-
 function previousIssueButtonClick(e) {
     e.preventDefault();
     currentIssue--;
@@ -278,12 +233,15 @@ function previousIssueButtonClick(e) {
 function saveIssueButtonClick(e) {
     e.preventDefault();
     let newIssue = {};
+    console.log(`saveIssue function called: currentIssue = ${currentIssue}`);
     newIssue.description = document.getElementById("add-issue-description").value;
     newIssue.findingURL = document.getElementById("add-issue-findingURL").value;
     newIssue.score = document.getElementById("add-issue-score").value;
     if (currentIssue === uc.steps[currentStep].issues.length) {
+        console.log("Entered else if");
         insertIssueTable(newIssue);
     } else {
+        console.log("Entered else ");
         var issueTable = document.getElementById("add-issue-table");
         var issueRow = issueTable.rows[currentIssue + 1];
         issueRow.cells[0].innerHTML = parseInt(currentIssue + 1);
@@ -300,20 +258,6 @@ function saveIssueButtonClick(e) {
     document.getElementById("add-issue-msg").innerHTML = "Issue " + (currentIssue + 1) + " successfully saved!";
 }
 
-function copyIssues2Table(issueTable) {
-    deleteIssueTable(issueTable);
-    var rows = issueTable.rows;
-    console.log("Entering copyIssues2Table");
-    for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
-        console.log("inserting issues into table");
-        console.log(`${uc.steps[currentStep].issues[i]}`);
-        insertIssueTable(uc.steps[currentStep].issues[i]);
-    }
-    document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[0].description;
-    document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[0].findingURL;
-    document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[0].score;
-}
-
 function insertIssueTable(newIssue) {
     var issueTable = document.getElementById("add-issue-table");
     var row = issueTable.insertRow(-1);
@@ -321,7 +265,6 @@ function insertIssueTable(newIssue) {
     var cell2 = row.insertCell(1);
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
-    console.log(`currentIssue: ${currentIssue}`);
     cell1.innerHTML = currentIssue + 1;
     cell2.innerHTML = newIssue.description;
     cell3.innerHTML = newIssue.findingURL;
@@ -341,7 +284,7 @@ function nextIssueButtonClick(e) {
     }
     else {
         document.getElementById("add-issue-dialog-next").removeAttribute("disabled");
-        document.getElementById("add-issue-msg").innerHTML = "Editing issue " + (currentIssue + 1);
+        document.getElementById("add-issue-msg").innerHTML = "Editing issue " + parseInt(currentIssue + 1);
         document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[currentIssue].description;
         document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[currentIssue].findingURL;
         document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[currentIssue].score;
@@ -394,7 +337,7 @@ function addStep2Perform(uc, i, formName) {
         ucDiv.appendChild(newStep);
     } else {
         var newStepLabel = document.createElement('H3');
-        newStepLabel.textContent = ++stepNumber;
+        newStepLabel.textContent = ++stepNumber + ": ";
         var stepLabelId = "uc-step-label[" + i + "]";
         newStepLabel.setAttribute("id", stepLabelId);
         var newStep = document.createElement('P');
@@ -414,7 +357,6 @@ function addStep2Perform(uc, i, formName) {
         addIssueButton.innerText = "Add Issue";
         addIssueButton.addEventListener('click', addIssueButtonClick);
         addIssueButton.setAttribute("id", "uc-add-issue[" + i + "]");
-        addIssueButton.setAttribute("aria-labelledby", addIssueButton.id + " " + newStepLabel.id);
         ucDiv.appendChild(addIssueButton);
     }
     form.appendChild(ucDiv);
