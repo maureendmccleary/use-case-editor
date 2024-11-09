@@ -73,6 +73,7 @@ var uc = { "steps": [], "stepCount": 1 };
 let fileHandle;
 let currentStep = 0;
 let currentIssue = 0;
+var allIssues = {};
 // fills a listbox with various types of use case-centric objects: scores, operating systems, assistive technologies
 function fillListbox(jobj, listboxid) {
     let lbx = document.getElementById(listboxid);
@@ -106,17 +107,32 @@ async function loadFileButtonClick(e) {
     const fp = await fileHandle.getFile();
     const jobjtext = await fp.text();
     let jobj = JSON.parse(jobjtext);
+    console.log(`e.target.form.id = ${e.target.form.id}`);
+    if (e.target.form.id == "uc-editor-form") {
+        var idPrefix = "uc-edit-";
+        console.log(`idPrefix = ${idPrefix}`);
+        uc.startlocation = (jobj.startlocation) ? jobj.startlocation : "";
+        document.getElementById(idPrefix + "startlocation").value = uc.startlocation;
+        document.getElementById("uc-edit-name").focus();
+    }
+    else {
+        var idPrefix = "uc-perform-";
+        console.log(`idPrefix = ${idPrefix}`);
+        uc.tester = (jobj.tester) ? jobj.tester : "";
+        document.getElementById(idPrefix + "tester").value = uc.tester;
+        document.getElementById("uc-perform-tester").focus();
+    }
+
     uc.name = (jobj.name) ? jobj.name : "";
     uc.goal = (jobj.goal) ? jobj.goal : "";
-    uc.startlocation = (jobj.startlocation) ? jobj.startlocation : "";
     uc.oses = (jobj.oses) ? jobj.oses : [];
     uc.ats = (jobj.ats) ? jobj.ats : [];
     uc.steps = (jobj.steps) ? jobj.steps : [];
     uc.stepCount = (jobj.stepCount) ? jobj.stepCount : "";
-    document.getElementById("uc-edit-name").value = uc.name;
-    document.getElementById("uc-edit-goal").value = uc.goal;
-    document.getElementById("uc-edit-startlocation").value = uc.startlocation;
-    var osOptions = document.getElementById("uc-edit-oses");
+    document.getElementById(idPrefix + "name").value = uc.name;
+    document.getElementById(idPrefix + "goal").value = uc.goal;
+
+    var osOptions = document.getElementById(idPrefix + "oses");
     for (var i = 0; i < uc.oses.length; i++) {
         for (var j = 0; j < osOptions.length; j++) {
             if (uc.oses[i] == osOptions[j].textContent) {
@@ -124,7 +140,7 @@ async function loadFileButtonClick(e) {
             }
         }
     }
-    var atOptions = document.getElementById("uc-edit-ats");
+    var atOptions = document.getElementById(idPrefix + "ats");
     for (var i = 0; i < uc.ats.length; i++) {
         for (var j = 0; j < atOptions.length; j++) {
             if (uc.ats[i] == atOptions[j].textContent) {
@@ -132,14 +148,18 @@ async function loadFileButtonClick(e) {
             }
         }
     }
-    for (let i = 0; i < uc.stepCount; i++) {
-        if (i === 0) {
-            document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
-        } else {
-            addStep2Perform(uc, i, "ucEditor");
+    if (idPrefix == "uc-edit-") {
+        for (let i = 0; i < uc.stepCount; i++) {
+            if (i === 0) {
+                document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
+            } else {
+                addStep2Perform(uc, i, "ucEditor");
+            }
         }
     }
-    document.getElementById("uc-edit-name").focus();
+    else {
+        populateForm();
+    }
 }
 
 function performButtonClick(e) {
@@ -153,15 +173,17 @@ function performButtonClick(e) {
     });
     fillListbox(uc.oses, "uc-perform-oses");
     fillListbox(uc.ats, "uc-perform-ats");
-    fillListbox(defaults["scores"], "uc-step-score");
+    fillListbox(defaults["scores"], "uc-perform-score");
     document.getElementById("uc-perform-name").innerHTML = uc.name;
     document.getElementById("uc-perform-goal").innerHTML = uc.goal;
     var a = document.createElement('a');
     a.href = uc.startlocation;
     a.textContent = uc.startlocation;
     a.target = "_blank";
-    var span = document.getElementById("uc-perform-url");
+    var span = document.getElementById("uc-perform-startlocation");
     span.appendChild(a);
+    document.getElementById("uc-perform-tester").addEventListener("blur", blurFormField);
+
     for (let i = 0; i < uc.steps.length; i++) {
         if (i === 0) {
             document.getElementById("uc-perform-step-contents[0]").textContent = uc.steps[i].instructions;
@@ -170,10 +192,43 @@ function performButtonClick(e) {
             addStep2Perform(uc, i, "ucPerformDialog");
         }
     }
+
+    var loadButton = document.getElementById("uc-results-load");
+    loadButton.addEventListener('click', loadFileButtonClick);
     var submitButton = document.getElementById("uc-perform-submit");
-    submitButton.addEventListener('click', copyToClipboard);
+    submitButton.addEventListener('click', saveFileButtonClick);
+    var generateSummaryButton = document.getElementById("uc-perform-generate-summary");
+    generateSummaryButton.addEventListener('click', generateSummary);
+
     document.getElementById("uc-add-issue[0]").addEventListener('click', addIssueButtonClick);
     document.getElementById("uc-perform-tester").addEventListener('blur', blurFormField);
+}
+
+function populateForm() {
+    uc.steps.forEach((step, index) => {
+        if (step.results) {
+            console.log(`step.results = ${step.results}`);
+            const resultId = "uc-perform-step-results[" + index + "]";
+            console.log(`resultId  = ${resultId}`);
+            document.getElementById(resultId).value = step.results;
+        }
+    });
+    const dialog = document.getElementById('perform-dialog');
+    const addIssueButtons = dialog.querySelectorAll('button[id^="uc-add-issue"]');
+    console.log(`addIssueButtons.length = ${addIssueButtons.length}`);
+
+    addIssueButtons.forEach((button, index) => {
+        console.log(`Button ${index + 1}: ${button.innerHTML}`);
+        console.log(`uc.steps[index].issues.length = ${uc.steps[index].issues.length}`);
+        if (uc.steps[index].issues && uc.steps[index].issues.length == 1) {
+            var issueStr = " Issue";
+            button.innerHTML = "View " + uc.steps[index].issues.length + issueStr;
+        }
+        else if (uc.steps[index].issues && uc.steps[index].issues.length > 1) {
+            var issueStr = " Issues";
+            button.innerHTML = "View " + uc.steps[index].issues.length + issueStr;
+        }
+    });
 }
 
 function addIssueButtonClick(e) {
@@ -181,21 +236,20 @@ function addIssueButtonClick(e) {
     const addIssueDialog = document.getElementById("add-issue-dialog");
     const addIssueClose = document.getElementById("add-issue-dialog-close");
     addIssueDialog.showModal();
-    /*addIssueDialog.addEventListener("keydown", (e) => {
-        if (e.keyCode === 27) {
+    addIssueDialog.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
             toggleAddIssue(e, addIssueDialog);
         }
-    });*/
+    });
+
     addIssueClose.addEventListener("click", toggleAddIssue);
-    var stepNumbers = Array.from({ length: uc.stepCount }, (_, i) => i + 1);
-    fillListbox(stepNumbers, "add-issue-step");
-    stepNumbers = document.getElementById("add-issue-step");
+    var heading = document.getElementById("add-issue-dialog-title");
     currentStep = getStepNumber(e.target.id);
-    for (var i = 0; i < stepNumbers.length; i++) {
-        if ((currentStep + 1) === stepNumbers[i].textContent) {
-            stepNumbers[i].selected = true;
-        }
-    }
+    heading.innerHTML = document.getElementById(e.target.id).textContent + " Step " + (currentStep + 1);
+    document.getElementById("add-issue-step-label").innerHTML = "Step " + String(currentStep + 1);
+    document.getElementById("add-issue-step").innerHTML = uc.steps[currentStep].instructions;
+    currentIssue = 0;
+    updateIssueTable();
     fillListbox(defaults["scores"], "add-issue-score");
     let previous = document.getElementById("add-issue-dialog-previous");
     previous.addEventListener("click", previousIssueButtonClick);
@@ -216,6 +270,52 @@ function toggleAddIssue(e) {
     dialog.close();
 }
 
+function updateIssueTable() {
+    var issueTable = document.getElementById("add-issue-table");
+    var rows = issueTable.rows;
+    if (uc.steps[currentStep].issues.length === 0
+        && rows.length === 1) {
+        console.log("No issues and empty table");
+        return;
+    }
+    else
+        if (uc.steps[currentStep].issues.length === 0) {
+            deleteIssueTable(issueTable);
+            console.log("No issues and deleted previous issues from table");
+            return;
+        }
+        else if ((uc.steps[currentStep].issues.length + 1) !== rows.length) {
+            copyIssues2Table(issueTable);
+            console.log("UpdateIssueTable: Number of issues != table rows");
+            console.log(`# issues: ${uc.steps[currentStep].issues.length} != table rows ${rows.length}`);
+            return;
+        }
+
+    for (let i = 0; i < rows.length; i++) {
+        var row = rows[i + 1];
+        var cells = row.cells;
+        if (uc.steps[currentStep].issues[i].description !== cells[1].innerHTML
+            || uc.steps[currentStep].issues[i].findingURL !== cells[2].innerHTML
+            || uc.steps[currentStep].issues[i].score !== cells[3].innerHTML) {
+            console.log("issue != table row");
+            console.log(`${cells[0].innerHTML} ${cells[1].innerHTML} ${cells[2].innerHTML} ${cells[3].innerHTML}`);
+            copyIssues2Table(issueTable);
+        }
+    }
+}
+
+function deleteIssueTable(issueTable) {
+    var rows = issueTable.rows;
+
+    for (let i = 1; i < rows.length; i++) {
+        issueTable.deleteRow(i);
+    }
+    document.getElementById("add-issue-description").value = "";
+    document.getElementById("add-issue-findingURL").value = "";
+    document.getElementById("add-issue-score").value = 0;
+    return;
+}
+
 function previousIssueButtonClick(e) {
     e.preventDefault();
     currentIssue--;
@@ -233,15 +333,12 @@ function previousIssueButtonClick(e) {
 function saveIssueButtonClick(e) {
     e.preventDefault();
     let newIssue = {};
-    console.log(`saveIssue function called: currentIssue = ${currentIssue}`);
     newIssue.description = document.getElementById("add-issue-description").value;
     newIssue.findingURL = document.getElementById("add-issue-findingURL").value;
     newIssue.score = document.getElementById("add-issue-score").value;
     if (currentIssue === uc.steps[currentStep].issues.length) {
-        console.log("Entered else if");
         insertIssueTable(newIssue);
     } else {
-        console.log("Entered else ");
         var issueTable = document.getElementById("add-issue-table");
         var issueRow = issueTable.rows[currentIssue + 1];
         issueRow.cells[0].innerHTML = parseInt(currentIssue + 1);
@@ -258,6 +355,20 @@ function saveIssueButtonClick(e) {
     document.getElementById("add-issue-msg").innerHTML = "Issue " + (currentIssue + 1) + " successfully saved!";
 }
 
+function copyIssues2Table(issueTable) {
+    deleteIssueTable(issueTable);
+    var rows = issueTable.rows;
+    console.log("Entering copyIssues2Table");
+    for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
+        console.log("inserting issues into table");
+        console.log(`${uc.steps[currentStep].issues[i]}`);
+        insertIssueTable(uc.steps[currentStep].issues[i]);
+    }
+    document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[0].description;
+    document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[0].findingURL;
+    document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[0].score;
+}
+
 function insertIssueTable(newIssue) {
     var issueTable = document.getElementById("add-issue-table");
     var row = issueTable.insertRow(-1);
@@ -265,6 +376,7 @@ function insertIssueTable(newIssue) {
     var cell2 = row.insertCell(1);
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
+    console.log(`currentIssue: ${currentIssue}`);
     cell1.innerHTML = currentIssue + 1;
     cell2.innerHTML = newIssue.description;
     cell3.innerHTML = newIssue.findingURL;
@@ -284,7 +396,7 @@ function nextIssueButtonClick(e) {
     }
     else {
         document.getElementById("add-issue-dialog-next").removeAttribute("disabled");
-        document.getElementById("add-issue-msg").innerHTML = "Editing issue " + parseInt(currentIssue + 1);
+        document.getElementById("add-issue-msg").innerHTML = "Editing issue " + (currentIssue + 1);
         document.getElementById("add-issue-description").value = uc.steps[currentStep].issues[currentIssue].description;
         document.getElementById("add-issue-findingURL").value = uc.steps[currentStep].issues[currentIssue].findingURL;
         document.getElementById("add-issue-score").value = uc.steps[currentStep].issues[currentIssue].score;
@@ -337,7 +449,7 @@ function addStep2Perform(uc, i, formName) {
         ucDiv.appendChild(newStep);
     } else {
         var newStepLabel = document.createElement('H3');
-        newStepLabel.textContent = ++stepNumber + ": ";
+        newStepLabel.textContent = "Step " + ++stepNumber;
         var stepLabelId = "uc-step-label[" + i + "]";
         newStepLabel.setAttribute("id", stepLabelId);
         var newStep = document.createElement('P');
@@ -347,6 +459,7 @@ function addStep2Perform(uc, i, formName) {
         var stepResults = document.createElement('TEXTAREA');
         var stepResultsId = "uc-perform-step-results[" + i + "]";
         stepResults.setAttribute("id", stepResultsId);
+        console.log(`stepResultsId = ${stepResultsId}`);
         stepResults.setAttribute("name", "results");
         stepResults.setAttribute('aria-labelledby', stepLabelId + " " + stepId);
         stepResults.addEventListener('blur', blurFormField);
@@ -357,6 +470,7 @@ function addStep2Perform(uc, i, formName) {
         addIssueButton.innerText = "Add Issue";
         addIssueButton.addEventListener('click', addIssueButtonClick);
         addIssueButton.setAttribute("id", "uc-add-issue[" + i + "]");
+        addIssueButton.setAttribute("aria-labelledby", addIssueButton.id + " " + newStepLabel.id);
         ucDiv.appendChild(addIssueButton);
     }
     form.appendChild(ucDiv);
@@ -426,10 +540,63 @@ function addFormEvents() {
 function copyToClipboard(e) {
     var ucText = JSON.stringify(uc);
     navigator.clipboard.writeText(ucText).then(() => {
-        console.log('Text copied to clipboard');
+        console.log('Use case data copied to clipboard');
     }).catch(err => {
-        console.error('Error copying text: ', err);
+        console.error('Error copying use case data: ', err);
     });
+    localStorage.setItem("uc", ucText);
+    document.getElementById("uc-perform-msg").innerHTML = "Use case data saved!";
+}
+
+function generateSummary() {
+    allIssues = issuesMap();
+    uc.score = 5;
+    console.log(`After calling Map() ${[...allIssues.keys()]}`);
+    uc.steps.forEach((step, index) => {
+        if (step.issues)
+            step.issues.forEach((issue, index) => {
+                console.log(`issue.description = ${issue.description}`);
+                if (issue.score < uc.score) {
+                    uc.score = issue.score;
+                }
+                insertIssue(allIssues, issue);
+            });
+    });
+
+    let summaryText = "";
+    let issueString = "";
+    let banner = ["Stoppers:", "Major Issues:", "Minor Issues", "Advisory"];
+    for (let score = 0; score < 4; score++) {
+        issueString = issuesText(allIssues, score + 1);
+        if (issueString != "") {
+            summaryText += banner[score];
+            summaryText += "\n";
+            summaryText += issueString;
+            summaryText += "\n\n";
+            console.log(`summaryText = ${summaryText}`);
+        }
+    }
+    document.getElementById("uc-perform-general-comments").value = summaryText;
+    document.getElementById("uc-perform-score").value = uc.score;
+    document.getElementById("uc-perform-general-comments").focus();
+}
+
+function issuesMap() {
+    allIssues = new Map();
+    for (let i = 1; i < 5; i++) {
+        allIssues.set(i, new Set());
+    }
+    return allIssues;
+}
+
+function insertIssue(allIssues, issue) {
+    console.log(`insertIssue called with score=${issue.score} description = ${issue.description}`);
+    allIssues.get(parseInt(issue.score)).add(issue.description);
+    console.log(`InsertIssue ${[...allIssues.keys()]}`);
+}
+
+function issuesText(allIssues, score) {
+    return [...allIssues.get(parseInt(score))].join("\n\n");
 }
 
 function initialize() {
