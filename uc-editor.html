@@ -89,8 +89,8 @@
       <br>
       <label for="uc-perform-general-comments">General Comments</label>
       <textarea id="uc-perform-general-comments"></textarea>
-          </div>
-          <button id="uc-perform-submit">Submit</button>
+    </div>
+    <button id="uc-perform-submit">Submit</button>
     <dialog id="add-issue-dialog" aria-labelledby="add-issue-dialog-title">
       <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
         <div>
@@ -126,6 +126,36 @@
           <button id="add-issue-dialog-previous">Previous</button>
           <button id="add-issue-dialog-save">Save</button>
           <button id="add-issue-dialog-next">Next</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="view-results-dialog" aria-labelledby="view-results-dialog-title">
+      <form id="view-results-form" name="viewResults">
+        <div>
+          <button autofocus id="view-results-dialog-close">Close</button>
+          <br>
+          <h1 id="view-results-dialog-title">Use Case Results</h1>
+          <br><br>
+          <h2>Significant Issues</h2>
+          <p><span id="view-uc-ats-overall"></span> Overall Rating: <span id="view-uc-score"></span></p>
+          <ul id="view-uc-top-issues"></ul>
+          <br><br>
+          <h2>Detailed Use Case Results: <span id="results-uc-name"></span></h2>
+          <p>Assistive Technology: <span id="results-uc-ats"></span></p>
+          <p>Goal: <span id="results-uc-goal"></span></p>
+          <p>Operator: <span id="results-uc-tester"></span></p>
+          <p>Start Location: <span id="results-uc-startlocation"></span></p>
+          <p>Operating System: <span id="results-uc-oses"></span></p>
+        </div>
+        <br><br>
+        <div>
+          <table id="view-results-table">
+            <tr>
+              <th scope="col">Step</th>
+              <th scope="col">Main Success Case</th>
+              <th scope="col">Issues Encountered</th>
+            </tr>
+          </table>
         </div>
       </form>
     </dialog>
