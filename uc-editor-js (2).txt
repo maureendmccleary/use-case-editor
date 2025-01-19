@@ -68,14 +68,15 @@ const fileopts = {
     }]
 };
 
-var ucNumber = 0;
+//var uc = { "steps": [], "stepCount": 1 };
 var evaluation = {
-    "evalUCs": [],
-    "score": 0
-};
+                    "evalUCs": [],
+                    "score": 0
+                 };
 let fileHandle;
 let currentStep = 0;
 let currentIssue = 0;
+var allIssues = issuesMap();
 
 function fillListbox(jobj, listboxid) {
     let lbx = document.getElementById(listboxid);
@@ -101,8 +102,8 @@ function fillListbox(jobj, listboxid) {
 
 function editUseCaseButtonClicked(e) {
     const selectUC = document.getElementById("select-uc");
-    ucNumber = selectUC.value;
-    populateEditor();
+    const uc = evaluation.evalUCs[selectUC.value];
+    populateEditor(uc);
 }
 
 async function loadFile() {
@@ -122,10 +123,16 @@ async function loadEvalButtonClicked(e) {
     evaluation = evalObj;
 }
 
-async function populateEditor() {
+async function populateEditor(uc) {
     let elem = null;
     let oslist, atlist;
-    let uc = getCurrentUC();
+    /* uc.startlocation = (jobj.startlocation) ? jobj.startlocation : "";
+    uc.name = (jobj.name) ? jobj.name : "";
+    uc.goal = (jobj.goal) ? jobj.goal : "";
+    uc.oses = (jobj.oses) ? jobj.oses : [];
+    uc.ats = (jobj.ats) ? jobj.ats : [];
+    uc.steps = (jobj.steps) ? jobj.steps : [];
+    uc.stepCount = (jobj.stepCount) ? jobj.stepCount : "";*/
     document.getElementById("uc-edit-startlocation").value = uc.startlocation;
     document.getElementById("uc-edit-name").focus();
 
@@ -152,21 +159,13 @@ async function populateEditor() {
         if (i === 0) {
             document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
         } else {
-            addStepToEditor(i);
+            addStep2Perform(uc, i, "ucEditor");
         }
     }
 }
 
-function getCurrentUC() {
-    return evaluation.evalUCs[ucNumber];
-}
-
 function performButtonClick(e) {
-    populatePerform();
-}
-
-function populatePerform() {
-    let uc = getCurrentUC();
+    e.preventDefault();
     const performDialog = document.getElementById("perform-dialog");
     const performDialogClose = document.getElementById("perform-dialog-close");
     performDialog.showModal();
@@ -191,24 +190,23 @@ function populatePerform() {
         if (i === 0) {
             document.getElementById("uc-perform-step-contents[0]").textContent = uc.steps[i].instructions;
         } else {
-            addStepToPerform(uc, i);
+            addStep2Perform(uc, i, "ucPerformDialog");
         }
     }
+    var loadButton = document.getElementById("uc-results-load");
+    loadButton.addEventListener('click', loadFileButtonClick);
     var generateSummaryButton = document.getElementById("uc-perform-generate-summary");
     generateSummaryButton.addEventListener('click', generateSummary);
     var viewResults = document.getElementById("uc-view-results");
     viewResults.addEventListener('click', createResultsTable);
     document.getElementById("uc-add-issue[0]").addEventListener('click', addIssueButtonClick);
     document.getElementById("uc-perform-tester").addEventListener('blur', blurFormField);
-    populateIssuesList();
-    updateAddIssueButtons();
 }
 
-function populateIssuesList() {
-    let uc = getCurrentUC();
+function populateForm() {
     uc.steps.forEach((step, index) => {
-        const resultId = `uc-perform-step-results[${index}]`;
-        let issueAggregateUl = document.getElementById(resultId);
+        const resultId = "uc-perform-step-results[" + index + "]";
+        var issueAggregateUl = document.getElementById(resultId);
         if (step.issues.length > 0) {
             step.issues.forEach((issue, i) => {
                 let issueDescLi = document.createElement("LI");
@@ -222,9 +220,6 @@ function populateIssuesList() {
             issueAggregateUl.appendChild(issueDescLi);
         }
     });
-}
-
-function updateAddIssueButtons() {
     const dialog = document.getElementById('perform-dialog');
     const addIssueButtons = dialog.querySelectorAll('button[id^="uc-add-issue"]');
     addIssueButtons.forEach((button, index) => {
@@ -534,106 +529,65 @@ function addStepButtonClick(e) {
     document.getElementById(newStep.id).focus();
 }
 
-function getStepId(stepNumber) {
-    return `uc-step-contents[${stepNumber}]`;
-}
-
-function createStepLabelForEditor(stepNumber) {
-    var newStepLabel = document.createElement('LABEL');
-    newStepLabel.setAttribute("style", "vertical-align:top");
-    newStepLabel.textContent = "Step " + (stepNumber + 1) + " ";
-    newStepLabel.setAttribute('for', getStepId(stepNumber));
-    return newStepLabel;
-}
-
-function createStepForEditor(stepNumber) {
-    let uc = getCurrentUC();
-    var newStep = document.createElement('TEXTAREA');
-    newStep.setAttribute("id", getStepId(stepNumber));
-    newStep.value = uc.steps[stepNumber].instructions;
-    newStep.addEventListener('blur', blurFormField);
-    return newStep;
-}
-
-function appendNewlines(form) {
-    form.appendChild(document.createElement("br"));
-    form.appendChild(document.createElement("br"));
-}
-
-function addStepToEditor(stepNumber) {
-    let form = document.forms["ucEditor"];
-    let ucDiv = document.createElement("DIV");
-    let newStepLabel = createStepLabelForEditor(stepNumber);
-    let newStep = createStepForEditor(stepNumber);
-
-    appendNewlines(form);
-    ucDiv.appendChild(newStepLabel);
-    ucDiv.appendChild(newStep);
+function addStep2Perform(uc, i, formName) {
+    var form = document.forms[formName];
+    var br = document.createElement("br");
+    var ucDiv = document.createElement("DIV");
+    form.appendChild(br);
+    form.appendChild(br);
+    let stepNumber = i;
+    if (formName === "ucEditor") {
+        var newStepLabel = document.createElement('LABEL');
+        newStepLabel.setAttribute("style", "vertical-align:top");
+        newStepLabel.textContent = "Step " + ++stepNumber + " ";
+        var newStep = document.createElement('TEXTAREA');
+        var stepId = "uc-step-contents[" + i + "]";
+        newStep.setAttribute("id", stepId);
+        newStepLabel.setAttribute('for', stepId);
+        newStep.value = uc.steps[i].instructions;
+        newStep.addEventListener('blur', blurFormField);
+        ucDiv.appendChild(newStepLabel);
+        ucDiv.appendChild(newStep);
+    } else {
+        var newStepLabel = document.createElement('H3');
+        newStepLabel.textContent = "Step " + ++stepNumber;
+        var stepLabelId = "uc-step-label[" + i + "]";
+        newStepLabel.setAttribute("id", stepLabelId);
+        var newStep = document.createElement('P');
+        var stepId = "uc-perform-step-contents[" + i + "]";
+        newStep.setAttribute("id", stepId);
+        newStep.textContent = uc.steps[i].instructions;
+        var issueListH4 = document.createElement('H4');
+        issueListH4.innerHTML = "Issues"
+        var stepResults = document.createElement('UL');
+        var stepResultsId = "uc-perform-step-results[" + i + "]";
+        stepResults.setAttribute("id", stepResultsId);
+        stepResults.setAttribute("name", "results");
+        ucDiv.appendChild(newStepLabel);
+        ucDiv.appendChild(newStep);
+        ucDiv.appendChild(issueListH4);
+        ucDiv.appendChild(stepResults);
+        ucDiv.appendChild(br);
+        ucDiv.appendChild(br);
+        var addIssueButton = document.createElement('BUTTON');
+        addIssueButton.innerText = "Add Issue";
+        addIssueButton.addEventListener('click', addIssueButtonClick);
+        addIssueButton.setAttribute("id", "uc-add-issue[" + i + "]");
+        addIssueButton.setAttribute("aria-labelledby", addIssueButton.id + " " + newStepLabel.id);
+        ucDiv.appendChild(addIssueButton);
+    }
     form.appendChild(ucDiv);
-    appendNewlines(form);
+    form.appendChild(br);
+    form.appendChild(br);
 }
 
-function createStepLabelForPerform(stepNumber) {
-    let newStepLabel = document.createElement('H3');
-    newStepLabel.textContent = `Step ${stepNumber + 1}`;
-    newStepLabel.setAttribute("id", getStepLabelIdForPerform(stepNumber));
-    return newStepLabel;
-}
-
-function createStepInstructionsForPerform(stepNumber) {
-    let uc = getCurrentUC();
-    let newStep = document.createElement('P');
-    newStep.setAttribute("id", `uc-perform-step-contents[${stepNumber}]`);
-    newStep.textContent = uc.steps[stepNumber].instructions;
-    return newStep;
-}
-
-function createIssueListHeading() {
-    let issueListH4 = document.createElement('H4');
-    issueListH4.innerHTML = "Issues";
-    return issueListH4;
-}
-
-function createStepResultsForPerform(stepNumber) {
-    let stepResults = document.createElement('UL');
-    stepResults.setAttribute("id", `uc-perform-step-results[${stepNumber}]`);
-    stepResults.setAttribute("name", "results");
-    return stepResults;
-}
-
-function getStepLabelIdForPerform(stepNumber) {
-    return `uc-step-label[${stepNumber}]`;
-}
-
-function createAddIssueButtonForPerform(stepNumber) {
-    let addIssueButton = document.createElement('BUTTON');
-    let stepLabelId = getStepLabelIdForPerform(stepNumber);
-    addIssueButton.innerText = "Add Issue";
-    addIssueButton.addEventListener('click', addIssueButtonClick);
-    addIssueButton.setAttribute("id", `uc-add-issue[${stepNumber}]`);
-    addIssueButton.setAttribute("aria-labelledby",
-        `${addIssueButton.id} ${stepLabelId}`);
-    return addIssueButton;
-}
-
-function addStepToPerform(uc, stepNumber) {
-    let form = document.forms["ucPerformDialog"];
-    let ucDiv = document.createElement("DIV");
-    let newStepLabel = createStepLabelForPerform(stepNumber);
-    let newStep = createStepInstructionsForPerform(stepNumber);
-    let issueListH4 = createIssueListHeading();
-    let stepResults = createStepResultsForPerform(stepNumber);
-    let addIssueButton = createAddIssueButtonForPerform(stepNumber);
-
-    appendNewlines(form);
-    ucDiv.appendChild(newStepLabel);
-    ucDiv.appendChild(newStep);
-    ucDiv.appendChild(issueListH4);
-    ucDiv.appendChild(stepResults);
-    appendNewlines(ucDiv);
-    ucDiv.appendChild(addIssueButton);
-    form.appendChild(ucDiv);
-    appendNewlines(form);
+function makeStepId(formName) {
+    var len = uc.stepCount - 1;
+    if (formName === "ucEditor") {
+        return "uc-step-contents[" + len + "]";
+    } else {
+        return "uc-perform-step-contents[" + len + "]";
+    }
 }
 
 function getStepNumber(stepId) {
@@ -644,7 +598,6 @@ function getStepNumber(stepId) {
 }
 
 function blurFormField(e) {
-    let uc = evaluation.evalUCs[ucNumber];
     const stepNumber = getStepNumber(e.target.id);
     if (e.target.name === "steps") {
         uc.steps[stepNumber] = { instructions: e.target.value, issues: [] };
@@ -699,7 +652,6 @@ function copyToClipboard(e) {
 }
 
 function generateSummary() {
-    let allIssues = issuesMap();
     uc.score = 5;
     uc.steps.forEach((step, index) => {
         if (step.issues)
@@ -728,26 +680,12 @@ function generateSummary() {
     document.getElementById("uc-perform-general-comments").focus();
 }
 
-function issuesMap(uc) {
-    let allIssues = new Map();
+function issuesMap() {
+    allIssues = new Map();
     for (let i = 1; i < 5; i++) {
         allIssues.set(i, new Set());
     }
-    for (let step of uc.steps) {
-        for (let issues of step.issues) {
-            insertIssue(allIssues, issue);
-        }
-    }
     return allIssues;
-}
-
-function minimumScore(allIssues) {
-    let result = 5;
-    for (let [score, issues] of allIssues) {
-        if (issues.size > 0) {
-            result = Math.min(result, score);
-        }
-    }
 }
 
 function insertIssue(allIssues, issue) {
@@ -803,7 +741,6 @@ function createResultsTable(e) {
 function addTopIssues() {
     var topIssues = document.getElementById("view-uc-top-issues");
     let count = 0;
-    let allIssues = issuesMap();
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])
         .flatMap((entry) => [...entry[1]]);
 
