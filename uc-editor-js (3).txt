@@ -231,7 +231,7 @@ function populatePerform() {
             addStepToPerform(uc, i);
         }
     }
-    let saveResultsButton = document.getElementById("uc-results-save");
+    let saveResultsButton = document.getElementById("uc-results-save"); 
     saveResultsButton.addEventListener("click", saveFileButtonClick);
     let viewResults = document.getElementById("uc-view-results");
     viewResults.addEventListener('click', createResultsTable);
@@ -441,27 +441,10 @@ function saveIssueButtonClick(e) {
     newIssue.score = document.getElementById("add-issue-score").value;
     insertIssueTable(newIssue);
     uc.steps[currentStep].issues.push(newIssue);
-    updateIssueList();
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Issue successfully saved!";
     removeAddIssueControls();
     currentIssue = uc.steps[currentStep].issues.length;
-}
-
-function updateIssueList() {
-    let uc = getCurrentUC();
-    let issueList = document.getElementById(`uc-perform-step-results[${currentStep}]`);
-    
-    while (issueList.firstChild) {
-        issueList.removeChild(issueList.firstChild);
-    }
-    
-    for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
-        let issueLI = document.createElement("LI");
-        issueLI.innerHTML = uc.steps[currentStep].issues[i].description;
-        issueList.appendChild(issueLI);
-    }
-
 }
 
 function editSaveIssueButtonClick(e) {
@@ -478,7 +461,6 @@ function editSaveIssueButtonClick(e) {
     row.cells[2].innerText = newIssue.findingURL;
     row.cells[3].innerText = newIssue.score;
     uc.steps[currentStep].issues[currentIssue] = newIssue;
-    updateIssueList();
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Issue successfully saved!";
     removeAddIssueControls();
@@ -523,7 +505,7 @@ function editIssue(e) {
     let row = button.parentNode.parentNode;
     let issueTable = row.parentNode.parentNode;
     const rowIndex = row.rowIndex;
-    currentIssue = rowIndex - 1;
+    currentIssue = rowIndex;
     row = issueTable.rows[rowIndex];
     createAddIssueControls();
     let saveIssueButton = document.getElementById("add-issue-dialog-save");
@@ -554,7 +536,6 @@ function deleteIssue(e) {
         issueTable.rows[i].cells[0].innerHTML = i;
     }
     uc.steps[currentStep].issues.splice(rowIndex - 1, 1);
-    updateIssueList();
     console.log(`issues length = ${uc.steps[currentStep].issues.length}`);
     console.log(`issueTable has ${issueTable.rows.length} rows`);
 }
