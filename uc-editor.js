@@ -142,6 +142,14 @@ function editUseCaseButtonClicked(e) {
     populateEditor();
 }
 
+function newUseCaseButtonClicked(e) {
+    let form = document.getElementById('uc-editor-form');
+    form.classList.remove('inactive');
+    let addStepButton = document.getElementById("uc-add-step");
+    addStepButton.classList.remove("inactive");
+    document.getElementById("uc-edit-name").focus();
+}
+
 async function loadFile() {
     const [filePicker] = await window.showOpenFilePicker(fileopts);
     const fp = await filePicker.getFile();
@@ -185,7 +193,7 @@ async function populateEditor() {
             }
         }
     }
-    for (let i = 0; i < uc.stepCount; i++) {
+    for (let i = 0; i < uc.steps.length; i++) {
         if (i === 0) {
             document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
         } else {
@@ -378,58 +386,25 @@ function deleteIssueTable(issueTable) {
 }
 
 function newIssueButtonClick() {
-    createAddIssueControls();
+    showAddIssueControls();
     let saveIssueButton = document.getElementById("add-issue-dialog-save");
+    saveIssueButton.removeEventListener("click", editSaveIssueButtonClick);
     saveIssueButton.addEventListener("click", saveIssueButtonClick);
-    let addIssueForm = document.getElementById("uc-add-issue-dialog-form");
-    addIssueForm.appendChild(saveIssueButton);
 }
 
-function createAddIssueControls() {
+function showAddIssueControls() {
     let addIssueDiv = document.getElementById("add-issue-controls");
-    let issueDescriptionLabel = document.createElement("LABEL");
-    issueDescriptionLabel.innerHTML = "Description";
-    issueDescriptionLabel.setAttribute("id", "add-issue-description-label");
-    let issueDescription = document.createElement("TEXTAREA");
-    issueDescription.setAttribute("id", "add-issue-description");
-    issueDescriptionLabel.setAttribute("for", "add-issue-description");
-    addIssueDiv.appendChild(issueDescriptionLabel);
-    addIssueDiv.appendChild(issueDescription);
-    appendNewlines(addIssueDiv);
-    let issueFindingURLLabel = document.createElement("LABEL");
-    issueFindingURLLabel.setAttribute("id", "add-issue-findingURL-label");
-    issueFindingURLLabel.innerHTML = "Finding URL";
-    let issueFindingURL = document.createElement("INPUT");
-    issueFindingURL.setAttribute("id", "add-issue-findingURL");
-    issueFindingURLLabel.setAttribute("for", "add-issue-findingURL");
-    addIssueDiv.appendChild(issueFindingURLLabel);
-    addIssueDiv.appendChild(issueFindingURL);
-    appendNewlines(addIssueDiv);
-    let issueScoreLabel = document.createElement("LABEL");
-    issueScoreLabel.setAttribute("id", "add-issue-score-label");
-    issueScoreLabel.innerHTML = "Score";
-    let issueScore = document.createElement("SELECT");
-    issueScore.setAttribute("id", "add-issue-score");
-    issueScoreLabel.setAttribute("for", "add-issue-score");
-    addIssueDiv.appendChild(issueScoreLabel);
-    addIssueDiv.appendChild(issueScore);
+    addIssueDiv.classList.remove('inactive');
     fillListbox(defaults["scores"], "add-issue-score");
-    appendNewlines(addIssueDiv);
-    let saveIssueButton = document.createElement("button");
-    saveIssueButton.innerHTML = "Save Issue";
-    saveIssueButton.setAttribute("id", "add-issue-dialog-save");
-    addIssueDiv.appendChild(saveIssueButton);
+    document.getElementById("add-issue-dialog-new-issue").setAttribute("disabled", "true");
+    document.getElementById("add-issue-dialog-save").classList.remove("inactive");
     document.getElementById("add-issue-description").focus();
 }
 
-function removeAddIssueControls() {
-    document.getElementById("add-issue-description-label").remove();
-    document.getElementById("add-issue-description").remove();
-    document.getElementById("add-issue-findingURL-label").remove();
-    document.getElementById("add-issue-findingURL").remove();
-    document.getElementById("add-issue-score-label").remove();
-    document.getElementById("add-issue-score").remove();
-    document.getElementById("add-issue-dialog-save").remove();
+function hideAddIssueControls() {
+    document.getElementById("add-issue-controls").classList.add("inactive");
+    document.getElementById("add-issue-dialog-save").classList.add("inactive");
+    document.getElementById("add-issue-dialog-new-issue").removeAttribute("disabled");
 }
 
 function saveIssueButtonClick(e) {
@@ -444,24 +419,30 @@ function saveIssueButtonClick(e) {
     updateIssueList();
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Issue successfully saved!";
-    removeAddIssueControls();
+    hideAddIssueControls();
     currentIssue = uc.steps[currentStep].issues.length;
 }
 
 function updateIssueList() {
     let uc = getCurrentUC();
     let issueList = document.getElementById(`uc-perform-step-results[${currentStep}]`);
-    
+
     while (issueList.firstChild) {
         issueList.removeChild(issueList.firstChild);
     }
-    
-    for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
+    if (uc.steps[currentStep].issues.length == 0) {
         let issueLI = document.createElement("LI");
-        issueLI.innerHTML = uc.steps[currentStep].issues[i].description;
+        issueLI.innerHTML = "No issues";
         issueList.appendChild(issueLI);
-    }
 
+    }
+    else {
+        for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
+            let issueLI = document.createElement("LI");
+            issueLI.innerHTML = uc.steps[currentStep].issues[i].description;
+            issueList.appendChild(issueLI);
+        }
+    }
 }
 
 function editSaveIssueButtonClick(e) {
@@ -477,11 +458,11 @@ function editSaveIssueButtonClick(e) {
     row.cells[1].innerText = newIssue.description;
     row.cells[2].innerText = newIssue.findingURL;
     row.cells[3].innerText = newIssue.score;
-    uc.steps[currentStep].issues[currentIssue] = newIssue;
+    uc.steps[currentStep].issues[currentIssue - 1] = newIssue;
     updateIssueList();
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Issue successfully saved!";
-    removeAddIssueControls();
+    hideAddIssueControls();
     currentIssue = uc.steps[currentStep].issues.length;
 }
 
@@ -522,14 +503,12 @@ function editIssue(e) {
     const button = e.target;
     let row = button.parentNode.parentNode;
     let issueTable = row.parentNode.parentNode;
-    const rowIndex = row.rowIndex;
-    currentIssue = rowIndex - 1;
-    row = issueTable.rows[rowIndex];
-    createAddIssueControls();
+    currentIssue = row.rowIndex;
+    row = issueTable.rows[currentIssue];
+    showAddIssueControls();
     let saveIssueButton = document.getElementById("add-issue-dialog-save");
+    saveIssueButton.removeEventListener("click", saveIssueButtonClick);
     saveIssueButton.addEventListener("click", editSaveIssueButtonClick);
-    let addIssueForm = document.getElementById("uc-add-issue-dialog-form");
-    addIssueForm.appendChild(saveIssueButton);
     document.getElementById("add-issue-description").value = row.cells[1].innerText;
     document.getElementById("add-issue-findingURL").value = row.cells[2].innerText;
     document.getElementById("add-issue-score").value = row.cells[3].innerText;
@@ -561,6 +540,7 @@ function deleteIssue(e) {
 
 function addStepButtonClick(e) {
     e.preventDefault();
+    let uc = getCurrentUC();
     var form = document.forms["ucEditor"];
     var br = document.createElement('BR');
     var ucDiv = document.createElement('DIV');
@@ -571,7 +551,7 @@ function addStepButtonClick(e) {
     newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
     newStepLabel.setAttribute("style", "vertical-align:top");
     var newStep = document.createElement('TEXTAREA');
-    var stepId = makeStepId("ucEditor");
+    var stepId = `uc-step-contents[${uc.stepCount}]`;
     newStep.setAttribute("class", "step-contents");
     newStep.setAttribute("id", stepId);
     newStep.setAttribute("name", "steps");
@@ -598,6 +578,7 @@ function createStepLabelForEditor(stepNumber) {
 }
 
 function createStepForEditor(stepNumber) {
+    console.log(stepNumber);
     let uc = getCurrentUC();
     var newStep = document.createElement('TEXTAREA');
     newStep.setAttribute("id", getStepId(stepNumber));
@@ -765,7 +746,8 @@ function generateSummary() {
         }
     }
     document.getElementById("uc-perform-general-comments").value = summaryText;
-    document.getElementById("uc-perform-score").value = minimumScore(allIssues);
+    uc.score = minimumScore(allIssues);
+    document.getElementById("uc-perform-score").value = uc.score;
     document.getElementById("uc-perform-general-comments").focus();
 }
 
@@ -789,6 +771,7 @@ function minimumScore(allIssues) {
             result = Math.min(result, score);
         }
     }
+    return result;
 }
 
 function insertIssue(allIssues, issue) {
@@ -810,6 +793,7 @@ function createResultsTable(e) {
     });
     let uc = getCurrentUC();
     document.getElementById("view-uc-ats-overall").textContent = uc.ats;
+    uc.score = minimumScore(issuesMap(uc));
     document.getElementById("view-uc-score").textContent = uc.score;
     addTopIssues();
     document.getElementById("results-uc-name").innerHTML = uc.name;
@@ -843,7 +827,6 @@ function createResultsTable(e) {
 }
 
 function addTopIssues() {
-    console.log(getCurrentUC());
     var topIssues = document.getElementById("view-uc-top-issues");
     let allIssues = issuesMap(getCurrentUC());
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])
@@ -867,6 +850,8 @@ function initialize() {
     loadEvalButton.addEventListener("click", loadEvalButtonClicked);
     const editUseCaseButton = document.getElementById("edit-uc");
     editUseCaseButton.addEventListener("click", editUseCaseButtonClicked);
+    const newUseCaseButton = document.getElementById("new-uc");
+    newUseCaseButton.addEventListener("click", newUseCaseButtonClicked);
     fillListbox(defaults["os-types"], "uc-edit-oses");
     fillListbox(defaults["at-types"], "uc-edit-ats");
     addFormEvents();

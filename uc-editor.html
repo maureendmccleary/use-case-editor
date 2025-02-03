@@ -8,15 +8,18 @@
 </head>
 
 <body>
-  <div>
-    <h1>Use Case Utility</h1>
-    <button id="eval-file-load">Load Evaluation File...</button>
-    <br><br>
-    <label for="select-uc">Select a Use Case: </label>
-    <select name="select-uc" id="select-uc"></select>
-    <br><br>
-    <button id="edit-uc">Edit Use Case</button>
-  </div>
+  <form id="evaluation-form">
+    <div>
+      <h1>Use Case Utility</h1>
+      <button id="eval-file-load">Load Evaluation File...</button>
+      <br><br>
+      <label for="select-uc">Select a Use Case: </label>
+      <select name="select-uc" id="select-uc"></select>
+      <br><br>
+      <button id="edit-uc" type="button">Edit Use Case</button>
+      <button id="new-uc" type="button">New Use Case</button>
+    </div>
+  </form>
   <form id="uc-editor-form" class="inactive" name="ucEditor">
     <button disabled id="uc-file-save">Save</button>
     <button id="uc-perform">Perform</button>
@@ -114,10 +117,20 @@
         </tr>
       </table>
       <br><br>
-      <div id="add-issue-controls"></div>
+      <div class="inactive" id="add-issue-controls">
+        <label id="add-issue-description-label" for="add-issue-description">Description</label>
+        <textarea id="add-issue-description"></textarea>
+        <br><br>
+        <label id="add-issue-findingURL-label" for="add-issue-findingURL">Finding URL</label>
+        <input id="add-issue-findingURL">
+        <br><br>
+        <label id="add-issue-score-label" for="add-issue-score">Score</label>
+        <select id="add-issue-score"></select>
+      </div>
       <br>
       <br>
       <button id="add-issue-dialog-new-issue" type="button">New Issue</button>
+      <button class="inactive" id="add-issue-dialog-save" type="button">Save Issue</button>
     </form>
   </dialog>
   <dialog id="view-results-dialog" aria-labelledby="view-results-dialog-title">
