@@ -193,6 +193,15 @@ async function populateEditor() {
             }
         }
     }
+    let form = document.getElementById("uc-editor-form");
+    var stepDivs = form.querySelectorAll('div[id^="uc-step-div"]');
+    console.log(`populateEditor stepDivs[0].id: ${stepDivs[0].id}`);
+    console.log(`stepDivs.length: ${stepDivs.length}`);
+    for (let i = 1; i < stepDivs.length; i++) {
+        console.log(`populateEditor stepDivs[i].id: ${stepDivs[i].id}`);
+        console.log(`uc.steps.length: ${uc.steps.length}`);
+        stepDivs[i].remove();
+    }
     for (let i = 0; i < uc.steps.length; i++) {
         if (i === 0) {
             document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
@@ -213,12 +222,23 @@ function performButtonClick(e) {
 function populatePerform() {
     let uc = getCurrentUC();
     const performDialog = document.getElementById("perform-dialog");
+    var stepDivs = performDialog .querySelectorAll('div[id^="uc-step-div"]');
+    console.log(`populatePerform stepDivs[0].id: ${stepDivs[0].id}`);
+    console.log(`stepDivs.length: ${stepDivs.length}`);
+    for (let i = 1; i < stepDivs.length; i++) {
+        console.log(`populatePerform stepDivs[i].id: ${stepDivs[i].id}`);
+        console.log(`uc.steps.length: ${uc.steps.length}`);
+        stepDivs[i].remove();
+    }
+
     const performDialogClose = document.getElementById("perform-dialog-close");
     performDialog.showModal();
     performDialogClose.addEventListener("click", (e) => {
         e.preventDefault();
         performDialog.close();
     });
+    let performForm = document.getElementById("uc-perform-dialog");
+    performForm.reset();
     fillListbox(uc.oses, "uc-perform-oses");
     fillListbox(uc.ats, "uc-perform-ats");
     fillListbox(defaults["scores"], "uc-perform-score");
@@ -254,6 +274,9 @@ function populateIssuesList() {
     uc.steps.forEach((step, index) => {
         const resultId = `uc-perform-step-results[${index}]`;
         let issueAggregateUl = document.getElementById(resultId);
+        while (issueAggregateUl.firstChild) {
+            issueAggregateUl.removeChild(issueAggregateUl.firstChild);
+        }
         if (step.issues.length > 0) {
             step.issues.forEach((issue, i) => {
                 let issueDescLi = document.createElement("LI");
@@ -312,6 +335,9 @@ function addIssueButtonClick(e) {
     updateIssueTable();
     let newIssue = document.getElementById("add-issue-dialog-new-issue");
     newIssue.addEventListener("click", newIssueButtonClick);
+    if (uc.steps[currentStep].issues.length == 0) {
+        newIssueButtonClick();
+    }
 }
 
 function toggleAddIssue(e) {
@@ -398,6 +424,9 @@ function showAddIssueControls() {
     fillListbox(defaults["scores"], "add-issue-score");
     document.getElementById("add-issue-dialog-new-issue").setAttribute("disabled", "true");
     document.getElementById("add-issue-dialog-save").classList.remove("inactive");
+    document.getElementById("add-issue-description").value = "";
+    document.getElementById("add-issue-findingURL").value = "";
+    document.getElementById("add-issue-score").value = "";
     document.getElementById("add-issue-description").focus();
 }
 
@@ -544,15 +573,17 @@ function addStepButtonClick(e) {
     var form = document.forms["ucEditor"];
     var br = document.createElement('BR');
     var ucDiv = document.createElement('DIV');
+    uc.stepCount++;
+    ucDiv.id = `uc-step-div[${stepCount}]`;
+    console.log(`addStepButtonClick ucDiv.id: ${ucDiv.id}`);
     ucDiv.appendChild(br);
     ucDiv.appendChild(br);
     var newStepLabel = document.createElement('LABEL');
-    uc.stepCount++;
     newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
     newStepLabel.setAttribute("style", "vertical-align:top");
     var newStep = document.createElement('TEXTAREA');
     var stepId = `uc-step-contents[${uc.stepCount}]`;
-    newStep.setAttribute("class", "step-contents");
+    newStep.classList.add("textarea");
     newStep.setAttribute("id", stepId);
     newStep.setAttribute("name", "steps");
     newStep.addEventListener('blur', blurFormField);
@@ -578,7 +609,7 @@ function createStepLabelForEditor(stepNumber) {
 }
 
 function createStepForEditor(stepNumber) {
-    console.log(stepNumber);
+    //console.log(stepNumber);
     let uc = getCurrentUC();
     var newStep = document.createElement('TEXTAREA');
     newStep.setAttribute("id", getStepId(stepNumber));
@@ -595,6 +626,8 @@ function appendNewlines(form) {
 function addStepToEditor(stepNumber) {
     let form = document.forms["ucEditor"];
     let ucDiv = document.createElement("DIV");
+    ucDiv.setAttribute("id", `uc-step-div[${stepNumber}]`);
+    console.log(`addStepToEditor ucDiv.id: ${ucDiv.id}`);
     let newStepLabel = createStepLabelForEditor(stepNumber);
     let newStep = createStepForEditor(stepNumber);
 
@@ -651,6 +684,8 @@ function createAddIssueButtonForPerform(stepNumber) {
 function addStepToPerform(uc, stepNumber) {
     let form = document.forms["ucPerformDialog"];
     let ucDiv = document.createElement("DIV");
+    ucDiv.setAttribute("id", `uc-step-div[${stepNumber}`);
+    console.log(`addStepToPerform ucDiv.id: ${ucDiv.id}`);
     let newStepLabel = createStepLabelForPerform(stepNumber);
     let newStep = createStepInstructionsForPerform(stepNumber);
     let issueListH4 = createIssueListHeading();
@@ -804,25 +839,29 @@ function createResultsTable(e) {
     document.getElementById("results-uc-oses").innerHTML = uc.oses;
 
     var resultsTable = document.getElementById("view-results-table");
-    var issueCell = "";
+    var descriptionCell = "";
+    var scoreCell = "";
     var banner = ["Stopper: ", "Major: ", "Minor: ", "Advisory: "];
     uc.steps.forEach((step, index) => {
         var row = resultsTable.insertRow(-1);
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
         var cell3 = row.insertCell(2);
-
+        var cell4 = row.insertCell(3);
         cell1.innerHTML = index + 1;
         cell2.innerHTML = step.instructions;
         if (!step.issues || step.issues.length == 0) {
-            issueCell = "No issues";
+            scoreCell = "5";
+            descriptionCell = "No issues";
         }
         step.issues.forEach((issue, index) => {
-            issueCell += banner[issue.score - 1];
-            issueCell += issue.description + "<br>";
+            scoreCell += issue.score + "<br>";
+            descriptionCell += issue.description + "<br>";
         });
-        cell3.innerHTML = issueCell;
-        issueCell = "";
+        cell3.innerHTML = scoreCell;
+        cell4.innerHTML = descriptionCell;
+        scoreCell = "";
+        descriptionCell = "";
     });
 }
 

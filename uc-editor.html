@@ -47,11 +47,11 @@
       <br>
     </div>
 
-    <div id="uc-step">
+    <div id="uc-step-div[0]">
       <br>
       <br>
       <label for="uc-step-contents[0]" style="vertical-align:top;">Step 1 </label>
-      <textarea class="step-contents" id="uc-step-contents[0]" name="steps"></textarea>
+      <textarea class="stepContents" id="uc-step-contents[0]" name="steps"></textarea>
       <br><br>
     </div>
   </form>
@@ -82,9 +82,11 @@
         <label for="uc-perform-ats">Assistive Technology Type: </label>
         <select name="ats" id="uc-perform-ats"></select>
         <br><br>
-        <h3 id="uc-perform-step-label[0]">Step 1 </h3>
-        <p id="uc-perform-step-contents[0]" name="steps"></p>
-        <br><br>
+        <div id="uc-step-div[0]">
+        <h3 id=" uc-perform-step-label[0]">Step 1 </h3>
+          <p id="uc-perform-step-contents[0]" name="steps"></p>
+          <br><br>
+        </div>
         <h4>Issues</h4>
         <ul id="uc-perform-step-results[0]" name="results"></ul>
         <br><br>
@@ -119,7 +121,7 @@
       <br><br>
       <div class="inactive" id="add-issue-controls">
         <label id="add-issue-description-label" for="add-issue-description">Description</label>
-        <textarea id="add-issue-description"></textarea>
+        <textarea class="textareCcontents" id="add-issue-description"></textarea>
         <br><br>
         <label id="add-issue-findingURL-label" for="add-issue-findingURL">Finding URL</label>
         <input id="add-issue-findingURL">
@@ -157,6 +159,7 @@
           <tr>
             <th scope="col">Step</th>
             <th scope="col">Main Success Case</th>
+            <th scope="col">Score</th>
             <th scope="col">Issues Encountered</th>
           </tr>
         </table>
