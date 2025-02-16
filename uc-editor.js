@@ -222,7 +222,7 @@ function performButtonClick(e) {
 function populatePerform() {
     let uc = getCurrentUC();
     const performDialog = document.getElementById("perform-dialog");
-    var stepDivs = performDialog .querySelectorAll('div[id^="uc-step-div"]');
+    var stepDivs = performDialog.querySelectorAll('div[id^="uc-step-div"]');
     console.log(`populatePerform stepDivs[0].id: ${stepDivs[0].id}`);
     console.log(`stepDivs.length: ${stepDivs.length}`);
     for (let i = 1; i < stepDivs.length; i++) {
@@ -267,6 +267,8 @@ function populatePerform() {
     document.getElementById("uc-perform-tester").addEventListener('blur', blurFormField);
     populateIssuesList();
     updateAddIssueButtons();
+    let score = document.getElementById("uc-perform-score");
+    score.value = minimumScore(issuesMap(uc));
 }
 
 function populateIssuesList() {
@@ -368,7 +370,8 @@ function toggleAddIssue(e) {
         }
         document.getElementById(resultId).value = issueAggregate;
     });
-
+    let score = document.getElementById("uc-perform-score");
+    score.value = minimumScore(issuesMap(uc));
     const dialog = document.getElementById("add-issue-dialog");
     dialog.close();
 }
@@ -383,7 +386,7 @@ function updateIssueTable() {
     }
     else
         if (uc.steps[currentStep].issues.length === 0) {
-            deleteIssueTable(issueTable);
+            clearTable(issueTable);
             return;
         }
         else if ((uc.steps[currentStep].issues.length + 1) !== rows.length) {
@@ -400,15 +403,6 @@ function updateIssueTable() {
             copyIssues2Table(issueTable);
         }
     }
-}
-
-function deleteIssueTable(issueTable) {
-    var rows = issueTable.rows;
-
-    for (let i = rows.length - 1; i > 0; i--) {
-        issueTable.deleteRow(i);
-    }
-    return;
 }
 
 function newIssueButtonClick() {
@@ -496,7 +490,7 @@ function editSaveIssueButtonClick(e) {
 }
 
 function copyIssues2Table(issueTable) {
-    deleteIssueTable(issueTable);
+    clearTable(issueTable);
     let uc = getCurrentUC();
     let rows = issueTable.rows;
     for (let i = 0; i < uc.steps[currentStep].issues.length; i++) {
@@ -839,6 +833,7 @@ function createResultsTable(e) {
     document.getElementById("results-uc-oses").innerHTML = uc.oses;
 
     var resultsTable = document.getElementById("view-results-table");
+    clearTable(resultsTable);
     var descriptionCell = "";
     var scoreCell = "";
     var banner = ["Stopper: ", "Major: ", "Minor: ", "Advisory: "];
@@ -863,6 +858,15 @@ function createResultsTable(e) {
         scoreCell = "";
         descriptionCell = "";
     });
+}
+
+function clearTable(table) {
+    var rows = table.rows;
+
+    for (let i = rows.length - 1; i > 0; i--) {
+        table.deleteRow(i);
+    }
+    return;
 }
 
 function addTopIssues() {
