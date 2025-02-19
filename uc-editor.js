@@ -132,6 +132,25 @@ function fillListbox(jobj, listboxid) {
     }
 }
 
+function evalViewResultsButtonClicked(e) {
+    e.preventDefault();
+    const evalViewResultsDialog = document.getElementById("eval-view-results-dialog");
+    const evalViewResultsDialogClose = document.getElementById("eval-view-results-dialog-close");
+    evalViewResultsDialog.showModal();
+    evalViewResultsDialogClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        evalViewResultsDialog.close();
+    });
+    let parentDiv = document.getElementById("eval-view-significant-issues");
+    parentDiv.innerHTML = "";
+
+    evaluation.evalUCs.forEach(uc => {
+        let resultsDiv = document.createElement("div");
+        resultsDiv = createResultsTable(uc, resultsDiv);
+        parentDiv.appendChild(resultsDiv);
+    });
+}
+
 function editUseCaseButtonClicked(e) {
     let form = document.getElementById('uc-editor-form');
     form.classList.remove('inactive');
@@ -262,7 +281,7 @@ function populatePerform() {
     let saveResultsButton = document.getElementById("uc-results-save");
     saveResultsButton.addEventListener("click", saveFileButtonClick);
     let viewResults = document.getElementById("uc-view-results");
-    viewResults.addEventListener('click', createResultsTable);
+    viewResults.addEventListener('click', viewResultsButtonClicked);
     document.getElementById("uc-add-issue[0]").addEventListener('click', addIssueButtonClick);
     document.getElementById("uc-perform-tester").addEventListener('blur', blurFormField);
     populateIssuesList();
@@ -811,7 +830,7 @@ function issuesText(allIssues, score) {
     return [...allIssues.get(parseInt(score))].join("\n\n");
 }
 
-function createResultsTable(e) {
+function viewResultsButtonClicked(e) {
     e.preventDefault();
     const viewResultsDialog = document.getElementById("view-results-dialog");
     const viewResultsDialogClose = document.getElementById("view-results-dialog-close");
@@ -820,23 +839,56 @@ function createResultsTable(e) {
         e.preventDefault();
         viewResultsDialog.close();
     });
+    let parentDiv = document.getElementById("uc-view-significant-issues");
+    parentDiv.innerHTML = "";
     let uc = getCurrentUC();
-    document.getElementById("view-uc-ats-overall").textContent = uc.ats;
-    uc.score = minimumScore(issuesMap(uc));
-    document.getElementById("view-uc-score").textContent = uc.score;
-    addTopIssues();
-    document.getElementById("results-uc-name").innerHTML = uc.name;
-    document.getElementById("results-uc-ats").innerHTML = uc.ats;
-    document.getElementById("results-uc-goal").innerHTML = uc.goal;
-    document.getElementById("results-uc-tester").innerHTML = uc.tester;
-    document.getElementById("results-uc-startlocation").innerHTML = uc.startlocation;
-    document.getElementById("results-uc-oses").innerHTML = uc.oses;
+    let resultsDiv = document.createElement("div");
+    createResultsTable(uc, resultsDiv);
+    parentDiv.appendChild(resultsDiv);
+}
 
-    var resultsTable = document.getElementById("view-results-table");
-    clearTable(resultsTable);
+function createResultsTable(uc, resultsDiv) {
+    let h2Heading = document.createElement("h2");
+    h2Heading.textContent = "Significant Issues";
+    resultsDiv.appendChild(h2Heading);
+    let p1 = document.createElement("p");
+    let score = minimumScore(issuesMap(uc));
+    p1.innerHTML = `${uc.ats} Overall Rating: ${score}`;
+    resultsDiv.appendChild(p1);
+    let topIssues = document.createElement("ul");
+    addTopIssues(topIssues);
+    resultsDiv.appendChild(topIssues);
+    let ucName = document.createElement("h2");
+    ucName.innerHTML = `Detailed Use Case Results: ${uc.name}`;
+    resultsDiv.appendChild(ucName);
+    let p2 = document.createElement("p");
+    p2.innerHTML = `Assistive Technology: ${uc.ats}<br>`;
+    p2.innerHTML += `Goal: ${uc.goal}<br>`;
+    p2.innerHTML += `Operator: ${uc.tester}<br>`;
+    p2.innerHTML += `Start Location: ${uc.startlocation}<br>`;
+    p2.innerHTML += `Operating System: ${uc.oses}<br><br>`;
+    resultsDiv.appendChild(p2);
+
+    var resultsTable = document.createElement("table");
+    var rowHeading = resultsTable.insertRow(-1);
+    var stepNumberCol = document.createElement("th");
+    stepNumberCol.setAttribute('scope', 'col');
+    stepNumberCol.innerHTML = "#";
+    rowHeading.appendChild(stepNumberCol);
+    var stepCol = document.createElement("th");
+    stepCol.setAttribute('scope', 'col');
+    stepCol.innerHTML = "Main Success Case";
+    rowHeading.appendChild(stepCol);
+    var scoreCol = document.createElement("th");
+    scoreCol.setAttribute('scope', 'col');
+    scoreCol.innerHTML = "Score";
+    rowHeading.appendChild(scoreCol);
+    var issueCol = document.createElement("th");
+    issueCol.setAttribute('scope', 'col');
+    issueCol.innerHTML = "Issues Encountered";
+    rowHeading.appendChild(issueCol);
     var descriptionCell = "";
     var scoreCell = "";
-    var banner = ["Stopper: ", "Major: ", "Minor: ", "Advisory: "];
     uc.steps.forEach((step, index) => {
         var row = resultsTable.insertRow(-1);
         var cell1 = row.insertCell(0);
@@ -858,6 +910,8 @@ function createResultsTable(e) {
         scoreCell = "";
         descriptionCell = "";
     });
+    resultsDiv.appendChild(resultsTable);
+    return resultsDiv;
 }
 
 function clearTable(table) {
@@ -869,8 +923,7 @@ function clearTable(table) {
     return;
 }
 
-function addTopIssues() {
-    var topIssues = document.getElementById("view-uc-top-issues");
+function addTopIssues(topIssues) {
     let allIssues = issuesMap(getCurrentUC());
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])
         .flatMap((entry) => [...entry[1]]);
@@ -891,6 +944,8 @@ function addTopIssues() {
 function initialize() {
     const loadEvalButton = document.getElementById("eval-file-load");
     loadEvalButton.addEventListener("click", loadEvalButtonClicked);
+    const evalViewResultsButton = document.getElementById("eval-view-results");
+    evalViewResultsButton.addEventListener("click", evalViewResultsButtonClicked);
     const editUseCaseButton = document.getElementById("edit-uc");
     editUseCaseButton.addEventListener("click", editUseCaseButtonClicked);
     const newUseCaseButton = document.getElementById("new-uc");

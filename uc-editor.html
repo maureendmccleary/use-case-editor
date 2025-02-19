@@ -12,6 +12,7 @@
     <div>
       <h1>Use Case Utility</h1>
       <button id="eval-file-load">Load Evaluation File...</button>
+      <button id="eval-view-results">View Evaluation Results</button>
       <br><br>
       <label for="select-uc">Select a Use Case: </label>
       <select name="select-uc" id="select-uc"></select>
@@ -83,7 +84,7 @@
         <select name="ats" id="uc-perform-ats"></select>
         <br><br>
         <div id="uc-step-div[0]">
-        <h3 id=" uc-perform-step-label[0]">Step 1 </h3>
+          <h3 id=" uc-perform-step-label[0]">Step 1 </h3>
           <p id="uc-perform-step-contents[0]" name="steps"></p>
           <br><br>
         </div>
@@ -142,30 +143,20 @@
         <br>
         <h1 id="view-results-dialog-title">Use Case Results</h1>
         <br><br>
-        <h2>Significant Issues</h2>
-        <p><span id="view-uc-ats-overall"></span> Overall Rating: <span id="view-uc-score"></span></p>
-        <ul id="view-uc-top-issues"></ul>
-        <br><br>
-        <h2>Detailed Use Case Results: <span id="results-uc-name"></span></h2>
-        <p>Assistive Technology: <span id="results-uc-ats"></span></p>
-        <p>Goal: <span id="results-uc-goal"></span></p>
-        <p>Operator: <span id="results-uc-tester"></span></p>
-        <p>Start Location: <span id="results-uc-startlocation"></span></p>
-        <p>Operating System: <span id="results-uc-oses"></span></p>
+        <div id="uc-view-significant-issues"></div>
       </div>
-      <br><br>
+    </form>
+  </dialog>
+  <dialog id="eval-view-results-dialog" aria-labelledby="evaluation-view-results-dialog-title">
+    <form id="eval-view-results-form" name="evaluationViewResults">
       <div>
-        <table id="view-results-table">
-          <tr>
-            <th scope="col">Step</th>
-            <th scope="col">Main Success Case</th>
-            <th scope="col">Score</th>
-            <th scope="col">Issues Encountered</th>
-          </tr>
-        </table>
+        <button autofocus id="eval-view-results-dialog-close">Close</button>
+        <br>
+        <h1 id="Eval-view-results-dialog-title">Evaluation Results</h1>
+        <br><br>
+        <div id="eval-view-significant-issues"></div>
       </div>
     </form>
   </dialog>
 </body>
-
 </html>
