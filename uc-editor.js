@@ -230,7 +230,16 @@ async function populateEditor() {
     }
 }
 
-function getCurrentUC() {
+function deleteStepButtonClicked(e) {
+let stepId = e.target.id;
+let uc = getCurrentUC();
+let i =  getStepNumber(stepId); 
+uc.steps.splice(i, 1);
+console.log(`Delete button with id ${stepId} was activated`);
+console.log(`Step index ${i} was deleted`);
+}
+
+    function getCurrentUC() {
     return evaluation.evalUCs[ucNumber];
 }
 
@@ -643,10 +652,14 @@ function addStepToEditor(stepNumber) {
     console.log(`addStepToEditor ucDiv.id: ${ucDiv.id}`);
     let newStepLabel = createStepLabelForEditor(stepNumber);
     let newStep = createStepForEditor(stepNumber);
-
+let deleteBtn = document.createElement("button");
+deleteBtn.innerHTML = "Delete";
+deleteBtn.setAttribute("id", `uc-step-delete[${stepNumber}]`);
+deleteBtn.addEventListener("click", deleteStepButtonClicked);
     appendNewlines(form);
     ucDiv.appendChild(newStepLabel);
     ucDiv.appendChild(newStep);
+    ucDiv.appendChild(deleteBtn);
     form.appendChild(ucDiv);
     appendNewlines(form);
 }
@@ -856,7 +869,7 @@ function createResultsTable(uc, resultsDiv) {
     p1.innerHTML = `${uc.ats} Overall Rating: ${score}`;
     resultsDiv.appendChild(p1);
     let topIssues = document.createElement("ul");
-    addTopIssues(topIssues);
+    addTopIssues(topIssues, uc);
     resultsDiv.appendChild(topIssues);
     let ucName = document.createElement("h2");
     ucName.innerHTML = `Detailed Use Case Results: ${uc.name}`;
@@ -923,8 +936,8 @@ function clearTable(table) {
     return;
 }
 
-function addTopIssues(topIssues) {
-    let allIssues = issuesMap(getCurrentUC());
+function addTopIssues(topIssues, uc) {
+    let allIssues = issuesMap(uc);
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])
         .flatMap((entry) => [...entry[1]]);
 
