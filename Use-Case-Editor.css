@@ -2,14 +2,14 @@
     display: none;
 }
 
-#perform-dialog::backdrop, #add-issue-dialog::backdrop, #eval-view-results-dialog::backdrop {
+#perform-dialog::backdrop, #add-issue-dialog::backdrop, #eval-view-results-dialog::backdrop  #uc-new-step-dialog::backdrop {
     background-image: linear-gradient(45deg,
             magenta, rebeccapurple,
             dodgerblue, green);
     opacity: 0.75;
 }
 
-#perform-dialog, #add-issue-dialog, #view-results-dialog, #eval-view-results-dialog {
+#perform-dialog, #add-issue-dialog, #view-results-dialog, #eval-view-results-dialog #uc-add-step-dialog::backdrop {
     width: 70%;
     height: 70%;
     border: 1px solid #000;
@@ -22,6 +22,11 @@
 }
 
 .step-contents {
+    width: 600px;
+    height: 200px;
+}
+
+.issue-description{
     width: 600px;
     height: 200px;
 }

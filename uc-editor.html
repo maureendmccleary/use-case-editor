@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>Use Case Editor</title>
+  <title>Use Case Testing Tool</title>
   <link rel="stylesheet" type="text/css" href="use-case-editor.css">
   <script type="text/javascript" src="uc-editor.js" defer></script>
 </head>
@@ -10,7 +10,7 @@
 <body>
   <form id="evaluation-form">
     <div>
-      <h1>Use Case Utility</h1>
+      <h1>Use Case Testing Tool</h1>
       <button id="eval-file-load">Load Evaluation File...</button>
       <button id="eval-view-results">View Evaluation Results</button>
       <br><br>
@@ -26,6 +26,9 @@
     <button id="uc-perform">Perform</button>
     <div role="group" id="uc-edit" aria-labelledby="uc-header-edit">
       <h1>Use Case Editor</h1>
+      <br><br>
+      <p id="uc-editor-msg" role="status" aria-live="assertive"></p>
+      <br><br>
       <h2 id="uc-header-edit">Use Case Information</h2>
       <label for="uc-edit-name">Name: </label>
       <input name="name" type="text" id="uc-edit-name">
@@ -48,16 +51,19 @@
       <br>
     </div>
 
-    <div id="uc-step-div[0]">
-      <br>
-      <br>
-      <label for="uc-step-contents[0]" style="vertical-align:top;">Step 1 </label>
-      <textarea class="stepContents" id="uc-step-contents[0]" name="steps"></textarea>
-      <button id="uc-step-delete[0]">Delete</button>
-      <br><br>
-    </div>
+    <div id="uc-step-parent-div">
+      </div>
   </form>
-  <button id="uc-add-step" class="inactive">Add Step</button>
+  <button id="uc-new-step" class="inactive">New Step</button>
+  <dialog id="uc-new-step-dialog" aria-labelledby="add-step-heading">
+    <button id="new-step-dialog-close">close</button>
+    <br><br>
+<h1 id="add-step-heading">Select Step Number To Add</h1>
+<label for="step-number">Step Number</label>
+<select id="step-number"></select> 
+<br><br>
+<button id="add-step">Add Step</button>
+  </dialog>
   <dialog id="perform-dialog" aria-labelledby="dialog-title">
     <form id="uc-perform-dialog" name="ucPerformDialog">
       <div>
@@ -123,7 +129,7 @@
       <br><br>
       <div class="inactive" id="add-issue-controls">
         <label id="add-issue-description-label" for="add-issue-description">Description</label>
-        <textarea class="textareCcontents" id="add-issue-description"></textarea>
+        <textarea class="issue-description" id="add-issue-description"></textarea>
         <br><br>
         <label id="add-issue-findingURL-label" for="add-issue-findingURL">Finding URL</label>
         <input id="add-issue-findingURL">

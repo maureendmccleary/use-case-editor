@@ -154,8 +154,8 @@ function evalViewResultsButtonClicked(e) {
 function editUseCaseButtonClicked(e) {
     let form = document.getElementById('uc-editor-form');
     form.classList.remove('inactive');
-    let addStepButton = document.getElementById("uc-add-step");
-    addStepButton.classList.remove("inactive");
+    let newStepButton = document.getElementById("uc-new-step");
+    newStepButton.classList.remove("inactive");
     const selectUC = document.getElementById("select-uc");
     ucNumber = selectUC.value;
     populateEditor();
@@ -164,8 +164,8 @@ function editUseCaseButtonClicked(e) {
 function newUseCaseButtonClicked(e) {
     let form = document.getElementById('uc-editor-form');
     form.classList.remove('inactive');
-    let addStepButton = document.getElementById("uc-add-step");
-    addStepButton.classList.remove("inactive");
+    let newStepButton = document.getElementById("uc-new-step");
+    newStepButton.classList.remove("inactive");
     document.getElementById("uc-edit-name").focus();
 }
 
@@ -212,34 +212,49 @@ async function populateEditor() {
             }
         }
     }
-    let form = document.getElementById("uc-editor-form");
-    var stepDivs = form.querySelectorAll('div[id^="uc-step-div"]');
-    console.log(`populateEditor stepDivs[0].id: ${stepDivs[0].id}`);
-    console.log(`stepDivs.length: ${stepDivs.length}`);
-    for (let i = 1; i < stepDivs.length; i++) {
-        console.log(`populateEditor stepDivs[i].id: ${stepDivs[i].id}`);
-        console.log(`uc.steps.length: ${uc.steps.length}`);
-        stepDivs[i].remove();
-    }
+    let stepParentDiv = document.getElementById("uc-step-parent-div");
+    stepParentDiv.innerHTML = "";
+    let populatedDiv = document.createElement("div");
+    populatedDiv = renderSteps(uc);
+    stepParentDiv.appendChild(populatedDiv);
+}
+
+function renderSteps(uc) {
+    let stepParentDiv = document.createElement("div");
+
     for (let i = 0; i < uc.steps.length; i++) {
-        if (i === 0) {
-            document.getElementById("uc-step-contents[0]").textContent = uc.steps[i].instructions;
-        } else {
-            addStepToEditor(i);
-        }
+        let stepDiv = document.createElement("div");
+        stepDiv = addStepToEditor(i);
+        stepParentDiv.appendChild(stepDiv);
     }
+    return stepParentDiv;
 }
 
 function deleteStepButtonClicked(e) {
-let stepId = e.target.id;
-let uc = getCurrentUC();
-let i =  getStepNumber(stepId); 
-uc.steps.splice(i, 1);
-console.log(`Delete button with id ${stepId} was activated`);
-console.log(`Step index ${i} was deleted`);
+    let stepId = e.target.id;
+    let uc = getCurrentUC();
+    let i = getStepNumber(stepId);
+    uc.steps.splice(i, 1);
+    let stepParentDiv = document.getElementById("uc-step-parent-div");
+    let newDiv = document.createElement("div");
+    stepParentDiv.innerHTML = "";
+    newDiv = renderSteps(uc);
+    stepParentDiv.appendChild(newDiv);
+    document.getElementById("uc-editor-msg").innerHTML = "";
+    document.getElementById("uc-editor-msg").innerHTML = `Step ${(i + 1)} was successfully deleted!`;
+    if (uc.steps.length <= i) {
+        let lastStepId = getStepId(uc.steps.length-1);
+        document.getElementById(lastStepId).focus();
+    }
+    else{
+        let nextStepId = getStepId(i);
+        document.getElementById(nextStepId).focus();
+        
+    }
 }
 
-    function getCurrentUC() {
+
+function getCurrentUC() {
     return evaluation.evalUCs[ucNumber];
 }
 
@@ -251,11 +266,7 @@ function populatePerform() {
     let uc = getCurrentUC();
     const performDialog = document.getElementById("perform-dialog");
     var stepDivs = performDialog.querySelectorAll('div[id^="uc-step-div"]');
-    console.log(`populatePerform stepDivs[0].id: ${stepDivs[0].id}`);
-    console.log(`stepDivs.length: ${stepDivs.length}`);
     for (let i = 1; i < stepDivs.length; i++) {
-        console.log(`populatePerform stepDivs[i].id: ${stepDivs[i].id}`);
-        console.log(`uc.steps.length: ${uc.steps.length}`);
         stepDivs[i].remove();
     }
 
@@ -505,7 +516,6 @@ function editSaveIssueButtonClick(e) {
     newIssue.score = document.getElementById("add-issue-score").value;
     let issueTable = document.getElementById("add-issue-table");
     let row = issueTable.rows[currentIssue];
-    console.log(`EditSaveIssueButtonClick row=${row.value}`);
     row.cells[1].innerText = newIssue.description;
     row.cells[2].innerText = newIssue.findingURL;
     row.cells[3].innerText = newIssue.score;
@@ -563,7 +573,6 @@ function editIssue(e) {
     document.getElementById("add-issue-description").value = row.cells[1].innerText;
     document.getElementById("add-issue-findingURL").value = row.cells[2].innerText;
     document.getElementById("add-issue-score").value = row.cells[3].innerText;
-    console.log(`EditIssue: rowIndex = ${rowIndex}`);
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Editing issue " + (rowIndex);
     document.getElementById("add-issue-description").focus();
@@ -575,7 +584,6 @@ function deleteIssue(e) {
     let uc = getCurrentUC();
     let issueTable = row.parentNode.parentNode;
     const rowIndex = row.rowIndex;
-    console.log(`Deleting row ${rowIndex}`);
     document.getElementById("add-issue-msg").innerHTML = "";
     document.getElementById("add-issue-msg").innerHTML = "Deleting issue " + rowIndex;
     issueTable.deleteRow(rowIndex);
@@ -585,37 +593,47 @@ function deleteIssue(e) {
     }
     uc.steps[currentStep].issues.splice(rowIndex - 1, 1);
     updateIssueList();
-    console.log(`issues length = ${uc.steps[currentStep].issues.length}`);
-    console.log(`issueTable has ${issueTable.rows.length} rows`);
 }
 
-function addStepButtonClick(e) {
+function newStepButtonClick(e) {
     e.preventDefault();
+    let newStepDialog = document.getElementById("uc-new-step-dialog");
     let uc = getCurrentUC();
-    var form = document.forms["ucEditor"];
-    var br = document.createElement('BR');
-    var ucDiv = document.createElement('DIV');
-    uc.stepCount++;
-    ucDiv.id = `uc-step-div[${stepCount}]`;
-    console.log(`addStepButtonClick ucDiv.id: ${ucDiv.id}`);
-    ucDiv.appendChild(br);
-    ucDiv.appendChild(br);
-    var newStepLabel = document.createElement('LABEL');
-    newStepLabel.innerHTML = "Step " + uc.stepCount + " ";
-    newStepLabel.setAttribute("style", "vertical-align:top");
-    var newStep = document.createElement('TEXTAREA');
-    var stepId = `uc-step-contents[${uc.stepCount}]`;
-    newStep.classList.add("textarea");
-    newStep.setAttribute("id", stepId);
-    newStep.setAttribute("name", "steps");
-    newStep.addEventListener('blur', blurFormField);
-    newStepLabel.setAttribute("for", stepId);
-    ucDiv.appendChild(newStepLabel);
-    ucDiv.appendChild(newStep);
-    form.appendChild(ucDiv);
-    form.appendChild(br);
-    form.appendChild(br);
-    document.getElementById(newStep.id).focus();
+    const newStepCloseBtn = document.getElementById("new-step-dialog-close");
+    newStepDialog.showModal();
+    newStepCloseBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        newStepDialog.close();
+    });
+    let numbers = [];
+    for (let i = 1; i <= uc.steps.length + 1; i++) {
+        numbers.push(i);
+    }
+    fillListbox(numbers, "step-number");
+    let newStep = {};
+    let stepNumberCmb = document.getElementById("step-number");
+    stepNumberCmb.selectedIndex = numbers.length - 1;
+
+    let addStepBtn = document.getElementById("add-step");
+    addStepBtn.addEventListener("click", addStepButtonClicked);
+}
+
+function addStepButtonClicked(e) {
+    let newStepDialog = document.getElementById("uc-new-step-dialog");
+    newStepDialog.close();
+    let uc = getCurrentUC();
+    let newStep = { instructions: "", issues: [] };
+    let i = document.getElementById("step-number").value;
+    console.log(`addStep i = ${i}`);
+    uc.steps.splice(i, 0, newStep);
+    let stepParentDiv = document.getElementById("uc-step-parent-div");
+    stepParentDiv.innerHTML = "";
+    let populatedDiv = document.createElement("div");
+    populatedDiv = renderSteps(uc);
+    stepParentDiv.appendChild(populatedDiv);
+
+    let stepId = getStepId(i);
+    document.getElementById(stepId).focus();
 }
 
 function getStepId(stepNumber) {
@@ -626,42 +644,43 @@ function createStepLabelForEditor(stepNumber) {
     var newStepLabel = document.createElement('LABEL');
     newStepLabel.setAttribute("style", "vertical-align:top");
     newStepLabel.textContent = "Step " + (stepNumber + 1) + " ";
+    let newStepLabelId = `uc-step-label[${stepNumber}]`;
+    newStepLabel.setAttribute("id", newStepLabelId);
     newStepLabel.setAttribute('for', getStepId(stepNumber));
     return newStepLabel;
 }
 
 function createStepForEditor(stepNumber) {
-    //console.log(stepNumber);
     let uc = getCurrentUC();
     var newStep = document.createElement('TEXTAREA');
     newStep.setAttribute("id", getStepId(stepNumber));
+    newStep.setAttribute("class", "step-contents");
     newStep.value = uc.steps[stepNumber].instructions;
     newStep.addEventListener('blur', blurFormField);
     return newStep;
 }
 
-function appendNewlines(form) {
-    form.appendChild(document.createElement("br"));
-    form.appendChild(document.createElement("br"));
+function appendNewlines(div) {
+    div.appendChild(document.createElement("br"));
+    div.appendChild(document.createElement("br"));
 }
 
 function addStepToEditor(stepNumber) {
-    let form = document.forms["ucEditor"];
-    let ucDiv = document.createElement("DIV");
-    ucDiv.setAttribute("id", `uc-step-div[${stepNumber}]`);
-    console.log(`addStepToEditor ucDiv.id: ${ucDiv.id}`);
+    let stepDiv = document.createElement("DIV");
+    stepDiv.setAttribute("id", `uc-step-div[${stepNumber}]`);
     let newStepLabel = createStepLabelForEditor(stepNumber);
     let newStep = createStepForEditor(stepNumber);
-let deleteBtn = document.createElement("button");
-deleteBtn.innerHTML = "Delete";
-deleteBtn.setAttribute("id", `uc-step-delete[${stepNumber}]`);
-deleteBtn.addEventListener("click", deleteStepButtonClicked);
-    appendNewlines(form);
-    ucDiv.appendChild(newStepLabel);
-    ucDiv.appendChild(newStep);
-    ucDiv.appendChild(deleteBtn);
-    form.appendChild(ucDiv);
-    appendNewlines(form);
+    let deleteBtn = document.createElement("button");
+    deleteBtn.innerHTML = "Delete";
+    deleteBtn.setAttribute("id", `uc-step-delete[${stepNumber}]`);
+    deleteBtn.addEventListener("click", deleteStepButtonClicked);
+    deleteBtn.setAttribute("aria-labelledby", `${deleteBtn.id} ${newStepLabel.id}`);
+    appendNewlines(stepDiv);
+    stepDiv.appendChild(newStepLabel);
+    stepDiv.appendChild(newStep);
+    stepDiv.appendChild(deleteBtn);
+    appendNewlines(stepDiv);
+    return stepDiv;
 }
 
 function createStepLabelForPerform(stepNumber) {
@@ -702,8 +721,7 @@ function createAddIssueButtonForPerform(stepNumber) {
     addIssueButton.innerText = "Add Issue";
     addIssueButton.addEventListener('click', addIssueButtonClick);
     addIssueButton.setAttribute("id", `uc-add-issue[${stepNumber}]`);
-    addIssueButton.setAttribute("aria-labelledby",
-        `${addIssueButton.id} ${stepLabelId}`);
+    addIssueButton.setAttribute("aria-labelledby", `${addIssueButton.id} ${stepLabelId}`);
     return addIssueButton;
 }
 
@@ -711,7 +729,6 @@ function addStepToPerform(uc, stepNumber) {
     let form = document.forms["ucPerformDialog"];
     let ucDiv = document.createElement("DIV");
     ucDiv.setAttribute("id", `uc-step-div[${stepNumber}`);
-    console.log(`addStepToPerform ucDiv.id: ${ucDiv.id}`);
     let newStepLabel = createStepLabelForPerform(stepNumber);
     let newStep = createStepInstructionsForPerform(stepNumber);
     let issueListH4 = createIssueListHeading();
@@ -967,10 +984,9 @@ function initialize() {
     fillListbox(defaults["at-types"], "uc-edit-ats");
     addFormEvents();
     document.getElementById("uc-file-save").addEventListener('click', saveFileButtonClick);
-    // document.getElementById("uc-file-load").addEventListener('click', loadFileButtonClick);
     document.getElementById("uc-file-save").removeAttribute("disabled");
     document.getElementById("uc-perform").addEventListener('click', performButtonClick);
-    document.getElementById("uc-add-step").addEventListener('click', addStepButtonClick);
+    document.getElementById("uc-new-step").addEventListener('click', newStepButtonClick);
 }
 
 initialize();
