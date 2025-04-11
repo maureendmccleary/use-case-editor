@@ -2,14 +2,19 @@
     display: none;
 }
 
-#perform-dialog::backdrop, #add-issue-dialog::backdrop, #eval-view-results-dialog::backdrop  #uc-new-step-dialog::backdrop {
+#perform-dialog::backdrop,
+#add-issue-dialog::backdrop,
+#eval-view-results-dialog::backdrop #uc-new-step-dialog::backdrop {
     background-image: linear-gradient(45deg,
             magenta, rebeccapurple,
             dodgerblue, green);
     opacity: 0.75;
 }
 
-#perform-dialog, #add-issue-dialog, #view-results-dialog, #eval-view-results-dialog #uc-add-step-dialog::backdrop {
+#perform-dialog,
+#add-issue-dialog,
+#view-results-dialog,
+#eval-view-results-dialog #uc-add-step-dialog::backdrop {
     width: 70%;
     height: 70%;
     border: 1px solid #000;
@@ -26,7 +31,58 @@
     height: 200px;
 }
 
-.issue-description{
+.issue-description {
     width: 600px;
     height: 200px;
+}
+
+table {
+    width: 75%;
+    border-collapse: collapse;
+    margin: 20px auto;
+}
+
+th {
+    background-color: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+}
+
+td {
+    border: 1px solid #000;
+    padding: 10px;
+}
+
+tr {
+    height: 40px;
+}
+
+.close-button button {
+    position: absolute;
+    display: flex;
+    padding: 0px;
+    top: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    justify-content: center;
+    align-items: center;
+}
+
+.close-button button :hover {
+    background-color: red;
+    color: white;
+}
+
+.fa-trash {
+    color: darkred;
+}
+
+.fa-pencil {
+    color: darkgreen
 }

@@ -2,15 +2,16 @@
 <html lang="en">
 
 <head>
-  <title>Use Case Testing Tool</title>
+  <title>Functional Accessibility Testing Tool</title>
   <link rel="stylesheet" type="text/css" href="use-case-editor.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <script type="text/javascript" src="uc-editor.js" defer></script>
 </head>
 
 <body>
   <form id="evaluation-form">
     <div>
-      <h1>Use Case Testing Tool</h1>
+      <h1>Functional Accessibility Testing Tool</h1>
       <button id="eval-file-load">Load Evaluation File...</button>
       <button id="eval-view-results">View Evaluation Results</button>
       <br><br>
@@ -19,6 +20,8 @@
       <br><br>
       <button id="edit-uc" type="button">Edit Use Case</button>
       <button id="new-uc" type="button">New Use Case</button>
+      <br><br>
+      <p id="evaluation-msg" role="status" aria-live="assertive"></p>      
     </div>
   </form>
   <form id="uc-editor-form" class="inactive" name="ucEditor">
@@ -52,54 +55,57 @@
     </div>
 
     <div id="uc-step-parent-div">
-      </div>
+    </div>
   </form>
   <button id="uc-new-step" class="inactive">New Step</button>
   <dialog id="uc-new-step-dialog" aria-labelledby="add-step-heading">
-    <button id="new-step-dialog-close">close</button>
+    <div class="close-button">
+      <button id="new-step-dialog-close" aria-label="close"><span class="fas fa-times"></span></button>
+    </div>
     <br><br>
-<h1 id="add-step-heading">Select Step Number To Add</h1>
-<label for="step-number">Step Number</label>
-<select id="step-number"></select> 
-<br><br>
-<button id="add-step">Add Step</button>
+    <h1 id="add-step-heading">Select Step Number To Add</h1>
+    <label for="step-number">Step Number</label>
+    <select id="step-number"></select>
+    <br><br>
+    <button id="add-step">Add Step</button>
   </dialog>
   <dialog id="perform-dialog" aria-labelledby="dialog-title">
     <form id="uc-perform-dialog" name="ucPerformDialog">
-      <div>
-        <button autofocus id="perform-dialog-close">close</button>
-        <button id="uc-results-save">Save Use Case Results</button>
-        <button id="uc-view-results">View Results</button>
+      <div class="close-button">
+        <button autofocus id="perform-dialog-close" aria-label="close"><span class="fas fa-times"></span></button>
+      </div>
+      <button id="uc-results-save">Save Use Case Results</button>
+      <button id="uc-view-results">View Results</button>
 
-        <h2 id="dialog-title">Perform Use Case</h2>
-        <br><br>
+      <h2 id="dialog-title">Perform Use Case</h2>
+      <br><br>
 
-        <p id="uc-perform-msg" role="status" aria-live="assertive"></p>
+      <p id="uc-perform-msg" role="status" aria-live="assertive"></p>
 
-        <h3>Overview Information: <span id="uc-perform-name"></span></h3>
-        <br>
-        <p>Goal: <span id="uc-perform-goal"></span></p>
-        <br>
-        <p>Start Location: <span id="uc-perform-startlocation"></span></p>
-        <br>
-        <label for="uc-perform-tester">Tester: </label>
-        <input name="tester" type="text" id="uc-perform-tester">
-        <label for="uc-perform-oses">Operating System: </label>
-        <select name="oses" id="uc-perform-oses"></select>
+      <h3>Overview Information: <span id="uc-perform-name"></span></h3>
+      <br>
+      <p>Goal: <span id="uc-perform-goal"></span></p>
+      <br>
+      <p>Start Location: <span id="uc-perform-startlocation"></span></p>
+      <br>
+      <label for="uc-perform-tester">Tester: </label>
+      <input name="tester" type="text" id="uc-perform-tester">
+      <label for="uc-perform-oses">Operating System: </label>
+      <select name="oses" id="uc-perform-oses"></select>
+      <br><br>
+      <label for="uc-perform-ats">Assistive Technology Type: </label>
+      <select name="ats" id="uc-perform-ats"></select>
+      <br><br>
+      <div id="uc-step-div[0]">
+        <h3 id=" uc-perform-step-label[0]">Step 1 </h3>
+        <p id="uc-perform-step-contents[0]" name="steps"></p>
         <br><br>
-        <label for="uc-perform-ats">Assistive Technology Type: </label>
-        <select name="ats" id="uc-perform-ats"></select>
-        <br><br>
-        <div id="uc-step-div[0]">
-          <h3 id=" uc-perform-step-label[0]">Step 1 </h3>
-          <p id="uc-perform-step-contents[0]" name="steps"></p>
-          <br><br>
-        </div>
-        <h4>Issues</h4>
-        <ul id="uc-perform-step-results[0]" name="results"></ul>
-        <br><br>
-        <button id="uc-add-issue[0]" aria-labelledby="uc-add-issue[0] uc-perform-step-label[0]">Add Issue</button>
-        <br><br>
+      </div>
+      <h4>Issues</h4>
+      <ul id="uc-perform-step-results[0]" name="results"></ul>
+      <br><br>
+      <button id="uc-add-issue[0]" aria-labelledby="uc-add-issue[0] uc-perform-step-label[0]">Add Issue</button>
+      <br><br>
       </div>
     </form>
     <div>
@@ -109,7 +115,9 @@
   </dialog>
   <dialog id="add-issue-dialog" aria-labelledby="add-issue-dialog-title">
     <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
-      <button autofocus id="add-issue-dialog-close">close</button>
+      <div class="close-button">
+        <button autofocus id="add-issue-dialog-close" aria-label="close"><span class="fas fa-times"></span></button>
+      </div>
       <h2 id="add-issue-dialog-title"></h2>
       <br>
       <p id="add-issue-msg" role="status" aria-live="assertive"></p>
@@ -145,19 +153,23 @@
   </dialog>
   <dialog id="view-results-dialog" aria-labelledby="view-results-dialog-title">
     <form id="view-results-form" name="viewResults">
-      <div>
-        <button autofocus id="view-results-dialog-close">Close</button>
-        <br>
-        <h1 id="view-results-dialog-title">Use Case Results</h1>
-        <br><br>
-        <div id="uc-view-significant-issues"></div>
+      <div class="close-button">
+        <button autofocus id="view-results-dialog-close" aria-label="close"><span class="fas fa-times"></span></button>
+      </div>
+      <br>
+      <h1 id="view-results-dialog-title">Use Case Results</h1>
+      <br><br>
+      <div id="uc-view-significant-issues"></div>
       </div>
     </form>
   </dialog>
   <dialog id="eval-view-results-dialog" aria-labelledby="evaluation-view-results-dialog-title">
     <form id="eval-view-results-form" name="evaluationViewResults">
       <div>
-        <button autofocus id="eval-view-results-dialog-close">Close</button>
+        <div class="close-button">
+          <button autofocus id="eval-view-results-dialog-close" aria-label="close"><span
+              class="fas fa-times"></span></button>
+        </div>
         <br>
         <h1 id="Eval-view-results-dialog-title">Evaluation Results</h1>
         <br><br>

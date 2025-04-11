@@ -77,37 +77,22 @@ let fileHandle;
 let currentStep = 0;
 let currentIssue = 0;
 
-class Issue {
-
-    constructor(description = "", score = -1, findingURL = "") {
-        this.description = description;
-        this.score = score;
-        this.findingURL = findingURL;
-    }
-
-}
-
-class UseCase {
-
-    constructor(args) {
-        this.steps = args.steps || [];
-        this.oses = args.oses || [];
-        this.ats = args.ats || [];
-        this.startlocation = args.startlocation || "";
-        this.goal = args.goal || "";
-        this.score = args.score || -1;
-        this.tester = args.tester || "";
-    }
-
-}
-
-class Evaluation {
-
-    constructor(useCases, score) {
-        this.useCases = useCases;
-        this.score = score;
-    }
-
+/**
+ * 
+ * @returns an empty Use Case (UC) object
+ * e.g. let uc = emptyUC();
+ */
+function emptyUC() {
+    return {
+        steps: [],
+        oses: [],
+        ats: [],
+        name: "",
+        startlocation: "",
+        goal: "",
+        score: -1,
+        tester: ""
+    };
 }
 
 function fillListbox(jobj, listboxid) {
@@ -166,6 +151,10 @@ function newUseCaseButtonClicked(e) {
     form.classList.remove('inactive');
     let newStepButton = document.getElementById("uc-new-step");
     newStepButton.classList.remove("inactive");
+    ucNumber = evaluation.evalUCs.length;
+    const newUC = emptyUC();
+    evaluation.evalUCs[ucNumber] = newUC;
+    populateEditor();
     document.getElementById("uc-edit-name").focus();
 }
 
@@ -178,12 +167,14 @@ async function loadFile() {
 
 async function loadEvalButtonClicked(e) {
     e.preventDefault();
-    console.log("Calling loadFile...");
+    console.log("Calling loadEvalButtonClicked");
     const evalObj = await loadFile();
-    console.log("File loaded");
+    console.log("eval File loaded");
     const ucNames = evalObj.evalUCs.map((uc) => uc.name);
     fillListbox(ucNames, "select-uc");
     evaluation = evalObj;
+    document.getElementById("evaluation-msg").innerHTML = "";
+    document.getElementById("evaluation-msg").innerHTML = "Evaluation data loaded!";
 }
 
 async function populateEditor() {
@@ -224,6 +215,7 @@ function renderSteps(uc) {
 
     for (let i = 0; i < uc.steps.length; i++) {
         let stepDiv = document.createElement("div");
+        //console.log(`uc.steps[${i}].instructions = ${uc.steps[i].instructions}`);
         stepDiv = addStepToEditor(i);
         stepParentDiv.appendChild(stepDiv);
     }
@@ -243,16 +235,15 @@ function deleteStepButtonClicked(e) {
     document.getElementById("uc-editor-msg").innerHTML = "";
     document.getElementById("uc-editor-msg").innerHTML = `Step ${(i + 1)} was successfully deleted!`;
     if (uc.steps.length <= i) {
-        let lastStepId = getStepId(uc.steps.length-1);
+        let lastStepId = getStepId(uc.steps.length - 1);
         document.getElementById(lastStepId).focus();
     }
-    else{
+    else {
         let nextStepId = getStepId(i);
         document.getElementById(nextStepId).focus();
-        
+
     }
 }
-
 
 function getCurrentUC() {
     return evaluation.evalUCs[ucNumber];
@@ -544,16 +535,24 @@ function insertIssueTable(newIssue) {
     var cell3 = row.insertCell(2);
     var cell4 = row.insertCell(3);
     var cell5 = row.insertCell(4);
+    cell1.setAttribute("style", "text-align: center");
     cell1.innerHTML = issueTable.rows.length - 1;
     cell2.innerHTML = newIssue.description;
     cell3.innerHTML = newIssue.findingURL;
     cell4.innerHTML = newIssue.score;
+    cell4.setAttribute("style", "text-align: center");
     const deleteIssueButton = document.createElement('button');
-    deleteIssueButton.innerHTML = 'Delete';
+    deleteIssueButton.setAttribute("aria-label", "delete");
+    const deleteIssueIcon = document.createElement("span");
+    deleteIssueIcon.classList.add("fa", "fa-trash");
+    deleteIssueButton.appendChild(deleteIssueIcon);
     deleteIssueButton.type = "button";
     deleteIssueButton.addEventListener("click", deleteIssue);
     const editIssueButton = document.createElement('button');
-    editIssueButton.innerHTML = 'Edit';
+    editIssueButton.setAttribute("aria-label", "edit");
+    const editIssueIcon = document.createElement("span");
+    editIssueIcon.classList.add("fa", "fa-edit");
+    editIssueButton.appendChild(editIssueIcon);
     editIssueButton.type = "button";
     editIssueButton.addEventListener("click", editIssue);
     cell5.appendChild(editIssueButton);
@@ -609,8 +608,8 @@ function newStepButtonClick(e) {
     for (let i = 1; i <= uc.steps.length + 1; i++) {
         numbers.push(i);
     }
+    document.getElementById("step-number").innerHTML = "";
     fillListbox(numbers, "step-number");
-    let newStep = {};
     let stepNumberCmb = document.getElementById("step-number");
     stepNumberCmb.selectedIndex = numbers.length - 1;
 
@@ -624,7 +623,8 @@ function addStepButtonClicked(e) {
     let uc = getCurrentUC();
     let newStep = { instructions: "", issues: [] };
     let i = document.getElementById("step-number").value;
-    console.log(`addStep i = ${i}`);
+    //console.log(`addStepButtonClicked: i = ${i}`);
+    //console.log(`Adding step[${i}] = ${uc.step[i].instructions}`);
     uc.steps.splice(i, 0, newStep);
     let stepParentDiv = document.getElementById("uc-step-parent-div");
     stepParentDiv.innerHTML = "";
@@ -656,6 +656,8 @@ function createStepForEditor(stepNumber) {
     newStep.setAttribute("id", getStepId(stepNumber));
     newStep.setAttribute("class", "step-contents");
     newStep.value = uc.steps[stepNumber].instructions;
+    //console.log(`createStepForEditor: ${uc.steps[stepNumber].instructions}`);
+    newStep.setAttribute("name", "steps");
     newStep.addEventListener('blur', blurFormField);
     return newStep;
 }
@@ -671,8 +673,11 @@ function addStepToEditor(stepNumber) {
     let newStepLabel = createStepLabelForEditor(stepNumber);
     let newStep = createStepForEditor(stepNumber);
     let deleteBtn = document.createElement("button");
-    deleteBtn.innerHTML = "Delete";
     deleteBtn.setAttribute("id", `uc-step-delete[${stepNumber}]`);
+    deleteBtn.setAttribute("aria-label", "delete");
+    let deleteIcon = document.createElement("span");
+    deleteIcon.classList.add("fas", "fa-trash");
+    deleteBtn.appendChild(deleteIcon);
     deleteBtn.addEventListener("click", deleteStepButtonClicked);
     deleteBtn.setAttribute("aria-labelledby", `${deleteBtn.id} ${newStepLabel.id}`);
     appendNewlines(stepDiv);
@@ -927,6 +932,7 @@ function createResultsTable(uc, resultsDiv) {
         var cell4 = row.insertCell(3);
         cell1.innerHTML = index + 1;
         cell2.innerHTML = step.instructions;
+        cell2.setAttribute("style", "text-align: center");
         if (!step.issues || step.issues.length == 0) {
             scoreCell = "5";
             descriptionCell = "No issues";
@@ -937,6 +943,7 @@ function createResultsTable(uc, resultsDiv) {
         });
         cell3.innerHTML = scoreCell;
         cell4.innerHTML = descriptionCell;
+        cell4.setAttribute("style", "text-align: center");
         scoreCell = "";
         descriptionCell = "";
     });
