@@ -874,15 +874,14 @@ function generateSummary(e) {
 function saveGeneralComments(e) {
     e.preventDefault();
     let uc = getCurrentUC();
-    console.log(`saveGeneralComments before text area assignment uc.comments.length = ${uc.comments.length}`);
     let summaryList = document.getElementById("summary-list");
+    let summaryLi = document.createElement("LI");
     while (summaryList.firstChild) {
         summaryList.removeChild(summaryList.firstChild);
     }
     let commentSummary = document.getElementById("general-comments").value.trim();
     if (commentSummary === "") {
         uc.comments.length = 0;
-        let summaryLi = document.createElement("LI");
         summaryLi.innerHTML = "No Issues";
         summaryList.appendChild(summaryLi);
     }
@@ -890,10 +889,8 @@ function saveGeneralComments(e) {
         let commentsWithoutBanners = commentSummary.replace(/Stoppers:|Major Issues:|Minor Issues:|Advisory:/g, "").trim();
         let comments = commentsWithoutBanners.split("\n\n");
         uc.comments = comments;
-        console.log(`saveGeneralComments after text area assignment uc.comments.length = ${uc.comments.length}`);
-        uc.comments.forEach((c, i) => {
-            let summaryLi = document.createElement("LI");
-            summaryLi.innerHTML = c;
+        uc.comments.forEach((comment, i) => {
+            summaryLi.innerHTML = comment;
             summaryList.appendChild(summaryLi);
         });
     }
@@ -1026,14 +1023,6 @@ function clearTable(table) {
 }
 
 function addTopIssues(topIssues, uc) {
-    if (uc.comments.length > 0) {
-        uc.comments.forEach(comment => {
-            var topIssue = document.createElement("li");
-            topIssue.innerHTML = comment;
-            topIssues.appendChild(topIssue);
-        });
-        return;
-    }
 
     let allIssues = issuesMap(uc);
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])
