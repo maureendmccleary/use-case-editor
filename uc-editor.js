@@ -1026,7 +1026,7 @@ function clearTable(table) {
 }
 
 function addTopIssues(topIssues, uc) {
-    if (uc.comments.length > 0) {
+    if (uc.comments && uc.comments.length > 0) {
         uc.comments.forEach(comment => {
             var topIssue = document.createElement("li");
             topIssue.innerHTML = comment;
