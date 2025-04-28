@@ -374,6 +374,7 @@ function addIssueButtonClick(e) {
 
     addIssueClose.addEventListener("click", toggleAddIssue);
     var heading = document.getElementById("add-issue-dialog-title");
+    document.getElementById("add-issue-msg").innerHTML = "";
     currentStep = getStepNumber(e.target.id);
     let uc = getCurrentUC();
     if (uc.steps[currentStep].issues.length == 0) {
@@ -644,8 +645,6 @@ function addStepButtonClicked(e) {
     let uc = getCurrentUC();
     let newStep = { instructions: "", issues: [] };
     let i = document.getElementById("step-number").value;
-    //console.log(`addStepButtonClicked: i = ${i}`);
-    //console.log(`Adding step[${i}] = ${uc.step[i].instructions}`);
     uc.steps.splice(i, 0, newStep);
     let stepParentDiv = document.getElementById("uc-step-parent-div");
     stepParentDiv.innerHTML = "";
@@ -838,6 +837,12 @@ function viewSummaryButtonClicked(e) {
     e.preventDefault();
     const viewSummaryDialog = document.getElementById("view-summary-dialog");
     viewSummaryDialog.showModal();
+    const viewSummaryDialogClose = document.getElementById("view-summary-dialog-close");
+    viewSummaryDialogClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        viewSummaryDialog.close();
+    });
+
     let generateSummaryBtn = document.getElementById("generate-summary");
     generateSummaryBtn.addEventListener("click", generateSummary);
     let saveSummaryBtn = document.getElementById("general-comments-save");
@@ -887,7 +892,7 @@ function saveGeneralComments(e) {
         summaryList.appendChild(summaryLi);
     }
     else {
-        let commentsWithoutBanners = commentSummary.replace(/Stoppers:|Major Issues:|Minor Issues:|Advisory:/g, "").trim();
+        let commentsWithoutBanners = commentSummary.replace(/Stoppers|Major Issues|Minor Issues|Advisory/g, "").trim();
         let comments = commentsWithoutBanners.split("\n\n");
         uc.comments = comments;
         console.log(`saveGeneralComments after text area assignment uc.comments.length = ${uc.comments.length}`);
@@ -998,13 +1003,13 @@ function createResultsTable(uc, resultsDiv) {
         cell1.innerHTML = index + 1;
         cell2.innerHTML = step.instructions;
         cell2.setAttribute("style", "text-align: center");
-        if (!step.issues || step.issues.length == 0) {
+        if (!step.issues || step.issues.length === 0) {
             scoreCell = "5";
-            descriptionCell = "No issues";
+            descriptionCell = "\u2022No issues";
         }
         step.issues.forEach((issue, index) => {
             scoreCell += issue.score + "<br>";
-            descriptionCell += issue.description + "<br>";
+            descriptionCell += "\u2022" + issue.description + "<br>";
         });
         cell3.innerHTML = scoreCell;
         cell4.innerHTML = descriptionCell;
