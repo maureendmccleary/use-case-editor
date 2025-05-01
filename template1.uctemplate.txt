@@ -1,0 +1,97 @@
+<div class="t-page">
+<img id="t-logo" alt="Level Access Logo">
+<h1>
+<span id="t-projectname">[Project Name]</span>
+</h1>
+<h2>
+<span id="t-usecaseresultsheader">Use Case Results</span>
+</h2>
+<!-- Page break. -->
+</div>
+
+<div class="t-page">
+<h1>
+<span id="t-tocheader">Table of Contents</span>
+</h1>
+<ul id="t-toclist">
+<!--
+Link 1: Table of contents
+Link 2: Executive summary (pre-written copy)
+Link 3: Significant Issues (UC specific for all ucs)
+Link 4: Testing and Scoring Key (prewritten copy)
+Links: Detailed Use Case Results - [use case name] for each use case in use cases.
+-->
+</ul>
+<!-- Page break. -->
+</div>
+
+<div class="t-page">
+<h1>
+<span id="t-exec-header">Executive Summary</span>
+</h1>
+<h2>
+<span id="t-exec-significantissuesheader">Significant Issues</span>
+</h2>
+<p>
+This document will outline the most significant, widespread high severity problems that were encountered during testing. Any given problem may have occurred on some, most, or all the use cases, or it may have occurred on a single use case (but was of sufficiently high severity to be noted here).
+</p>
+<div id="t-exec-significantissuesoverview">
+<!--
+This will contain significant issues from all use cases that have been selected when generating the report.
+The elements below will be created and inserted into this div by the use case editor.
+Format goes like this:
+<h3>
+<span class="t-exec-atheader">[Assistive Technology 1] Overall Rating:</span>
+<span class="t-exec-atscore"></span>
+</h3>
+<ul class="t-exec-issueslist">
+<li>first issue</li>
+<li>second issue</li>
+etc.
+</ul>
+<h3>
+<span class="t-exec-atheader">[Assistive Technology 2] Overall Rating:</span>
+<span class="t-exec-atscore"></span>
+</h3>
+<ul class="t-exec-issueslist">
+...
+</ul>
+...
+-->
+</div>
+</div>
+
+<div id="t-page">
+<h3>
+<span id="t-exec-scoringkeyheader">Testing and Scoring Key</span>
+</h3>
+<div id="t-exec-scoringkey">
+<p>
+Each Use Case is tested as a "Success Case" according to the specified steps. In some cases, "Extensions" are also performed inline that are peripheral to the execution of the use case. A typical example of an Extension is to instruct the tester to deliberately submit invalid data in a form to test the accessibility of its error handling. Every effort is made to achieve success, but minor, major, or "fatal" accessibility problems can occur at any point, which are noted in the "Issues" column next to the step where the problem(s)occurred. 
+At the end of each use case, its success or failure is scored on a 5-point scale, where "5" indicates complete success and "1" indicates complete failure (see below for a further explanation of "stoppers"). The following chart is an explanation of all five possible scores. After the entire set of Use Cases have been performed with that Assistive Technology, the tester then assigns an overall score and assembles a list of the most significant problems encountered across all Use Cases. The overall score and comments are detailed in the Significant Issues section of this report.
+</p>
+<p>
+If, during use case testing, the tester encounters any "stoppers"- problems that are deemed to be so severe that they effectively prevent the completion of the use case - the Use Case is automatically given a score of 1,"Complete Failure." However, to ensure that the entire use case is performed, testers are generally instructed to artificially get past the point(s) of failure, such as by getting the assistance of a non-disabled colleague. This explains why there may be problems noted in use case steps past a "stopper."
+</p>
+<table id="t-exec-scoretable">
+<thead>
+<tr>
+<th>Score</th>
+<th>Title</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody>
+<!-- To be filled in by the editor. -->
+</tbody>
+</table>
+</div>
+</div>
+
+<div class="t-page">
+<dl class="t-details-ucinfo">
+<!-- Goal, Operator (tester's name), Start Location, Operating System(s) -->
+</dl>
+<!-- results table -->
+</div>
+

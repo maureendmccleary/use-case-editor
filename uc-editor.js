@@ -65,7 +65,8 @@ const fileopts = {
     types: [{
         description: "JSON file",
         accept: { "application/json": [".json"] }
-    }]
+    }],
+	excludeAcceptAllOption: true
 };
 
 var ucNumber = 0;
