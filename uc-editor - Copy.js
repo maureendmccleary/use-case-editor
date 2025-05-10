@@ -65,7 +65,8 @@ const fileopts = {
     types: [{
         description: "JSON file",
         accept: { "application/json": [".json"] }
-    }]
+    }],
+	excludeAcceptAllOption: true
 };
 
 var ucNumber = 0;
@@ -160,7 +161,21 @@ function newUseCaseButtonClicked(e) {
 }
 
 async function loadFile() {
-    const [filePicker] = await window.showOpenFilePicker(fileopts);
+    const pickerOpts = {
+        types: [
+          {
+            description: "JSON Files",
+            accept: {
+              "application/json": [".json"],
+            },
+          },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false,
+        startIn: "documents"
+      };
+      
+    const [filePicker] = await window.showOpenFilePicker(pickerOpts);
     const fp = await filePicker.getFile();
     const jobjtext = await fp.text();
     return JSON.parse(jobjtext);
@@ -374,6 +389,7 @@ function addIssueButtonClick(e) {
 
     addIssueClose.addEventListener("click", toggleAddIssue);
     var heading = document.getElementById("add-issue-dialog-title");
+    document.getElementById("add-issue-msg").innerHTML = "";
     currentStep = getStepNumber(e.target.id);
     let uc = getCurrentUC();
     if (uc.steps[currentStep].issues.length == 0) {
@@ -644,8 +660,6 @@ function addStepButtonClicked(e) {
     let uc = getCurrentUC();
     let newStep = { instructions: "", issues: [] };
     let i = document.getElementById("step-number").value;
-    //console.log(`addStepButtonClicked: i = ${i}`);
-    //console.log(`Adding step[${i}] = ${uc.step[i].instructions}`);
     uc.steps.splice(i, 0, newStep);
     let stepParentDiv = document.getElementById("uc-step-parent-div");
     stepParentDiv.innerHTML = "";
@@ -838,6 +852,12 @@ function viewSummaryButtonClicked(e) {
     e.preventDefault();
     const viewSummaryDialog = document.getElementById("view-summary-dialog");
     viewSummaryDialog.showModal();
+    const viewSummaryDialogClose = document.getElementById("view-summary-dialog-close");
+    viewSummaryDialogClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        viewSummaryDialog.close();
+    });
+
     let generateSummaryBtn = document.getElementById("generate-summary");
     generateSummaryBtn.addEventListener("click", generateSummary);
     let saveSummaryBtn = document.getElementById("general-comments-save");
@@ -874,23 +894,26 @@ function generateSummary(e) {
 function saveGeneralComments(e) {
     e.preventDefault();
     let uc = getCurrentUC();
+    console.log(`saveGeneralComments before text area assignment uc.comments.length = ${uc.comments.length}`);
     let summaryList = document.getElementById("summary-list");
-    let summaryLi = document.createElement("LI");
     while (summaryList.firstChild) {
         summaryList.removeChild(summaryList.firstChild);
     }
     let commentSummary = document.getElementById("general-comments").value.trim();
     if (commentSummary === "") {
         uc.comments.length = 0;
+        let summaryLi = document.createElement("LI");
         summaryLi.innerHTML = "No Issues";
         summaryList.appendChild(summaryLi);
     }
     else {
-        let commentsWithoutBanners = commentSummary.replace(/Stoppers:|Major Issues:|Minor Issues:|Advisory:/g, "").trim();
+        let commentsWithoutBanners = commentSummary.replace(/Stoppers|Major Issues|Minor Issues|Advisory/g, "").trim();
         let comments = commentsWithoutBanners.split("\n\n");
         uc.comments = comments;
-        uc.comments.forEach((comment, i) => {
-            summaryLi.innerHTML = comment;
+        console.log(`saveGeneralComments after text area assignment uc.comments.length = ${uc.comments.length}`);
+        uc.comments.forEach((c, i) => {
+            let summaryLi = document.createElement("LI");
+            summaryLi.innerHTML = c;
             summaryList.appendChild(summaryLi);
         });
     }
@@ -995,13 +1018,13 @@ function createResultsTable(uc, resultsDiv) {
         cell1.innerHTML = index + 1;
         cell2.innerHTML = step.instructions;
         cell2.setAttribute("style", "text-align: center");
-        if (!step.issues || step.issues.length == 0) {
+        if (!step.issues || step.issues.length === 0) {
             scoreCell = "5";
-            descriptionCell = "No issues";
+            descriptionCell = "\u2022No issues";
         }
         step.issues.forEach((issue, index) => {
             scoreCell += issue.score + "<br>";
-            descriptionCell += issue.description + "<br>";
+            descriptionCell += "\u2022" + issue.description + "<br>";
         });
         cell3.innerHTML = scoreCell;
         cell4.innerHTML = descriptionCell;
@@ -1023,6 +1046,14 @@ function clearTable(table) {
 }
 
 function addTopIssues(topIssues, uc) {
+    if (uc.comments && uc.comments.length > 0) {
+        uc.comments.forEach(comment => {
+            var topIssue = document.createElement("li");
+            topIssue.innerHTML = comment;
+            topIssues.appendChild(topIssue);
+        });
+        return;
+    }
 
     let allIssues = issuesMap(uc);
     const sortedIssues = [...allIssues.entries()].sort((a, b) => a[0] - b[0])

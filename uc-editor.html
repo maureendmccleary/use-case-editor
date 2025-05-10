@@ -134,6 +134,22 @@
       <button type="button" id="general-comments-save" type="button">Save </button>
     </form>
   </dialog>
+  <dialog id="view-overall-comments-dialog" aria-labelledby="view-overall-comments-dialog-title">
+    <form id="view-overall-comments-form" name="viewOverallComments">
+      <div class="close-button">
+        <button type="button" autofocus id="view-overall-comments-dialog-close" aria-label="close"><span
+            class="fa fa-times"></span></button>
+      </div>
+      <h1 id="view-overall-comments-dialog-title">View Overall Comments</h1>
+      <br><br>
+      <p>The following is a list of the most important issues encountered while testing the evaluation.</p>
+      <br><br>
+      <label for="overall-comments">Overall Comments</label>
+      <textarea class="large-textarea" id="overall-comments"></textarea>
+      <br><br>
+      <button type="button" id="Overall-comments-save">Save </button>
+    </form>
+  </dialog>
   <dialog id="add-issue-dialog" aria-labelledby="add-issue-dialog-title">
     <form id="uc-add-issue-dialog-form" name="ucAddIssueDialog">
       <div class="close-button">
@@ -186,20 +202,20 @@
       </div>
     </form>
   </dialog>
-  <dialog id="eval-view-results-dialog" aria-labelledby="evaluation-view-results-dialog-title">
+  <dialog id="eval-view-results-dialog" aria-labelledby="eval-view-results-dialog-title">
     <form id="eval-view-results-form" name="evaluationViewResults">
       <div>
         <div class="close-button">
           <button type="button" autofocus id="eval-view-results-dialog-close" aria-label="close"><span
               class="fa fa-times"></span></button>
         </div>
+        <button id="view-overall-comments" type="button">View Overall Comments</button>
         <br>
-        <h1 id="Eval-view-results-dialog-title">Evaluation Results</h1>
+        <h1 id="eval-view-results-dialog-title">Evaluation Results</h1>
         <br><br>
         <div id="eval-view-significant-issues"></div>
       </div>
     </form>
   </dialog>
 </body>
-
 </html>

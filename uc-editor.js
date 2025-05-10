@@ -66,7 +66,7 @@ const fileopts = {
         description: "JSON file",
         accept: { "application/json": [".json"] }
     }],
-	excludeAcceptAllOption: true
+    excludeAcceptAllOption: true
 };
 
 var ucNumber = 0;
@@ -128,6 +128,8 @@ function evalViewResultsButtonClicked(e) {
         e.preventDefault();
         evalViewResultsDialog.close();
     });
+    let overallCommentsBtn = document.getElementById("view-overall-comments");
+    overallCommentsBtn.addEventListener("click", overallCommentsClicked);
     let parentDiv = document.getElementById("eval-view-significant-issues");
     parentDiv.innerHTML = "";
 
@@ -161,7 +163,21 @@ function newUseCaseButtonClicked(e) {
 }
 
 async function loadFile() {
-    const [filePicker] = await window.showOpenFilePicker(fileopts);
+    const pickerOpts = {
+        types: [
+            {
+                description: "JSON Files",
+                accept: {
+                    "application/json": [".json"],
+                },
+            },
+        ],
+        excludeAcceptAllOption: true,
+        multiple: false,
+        startIn: "documents"
+    };
+
+    const [filePicker] = await window.showOpenFilePicker(pickerOpts);
     const fp = await filePicker.getFile();
     const jobjtext = await fp.text();
     return JSON.parse(jobjtext);
@@ -845,7 +861,7 @@ function viewSummaryButtonClicked(e) {
     });
 
     let generateSummaryBtn = document.getElementById("generate-summary");
-    generateSummaryBtn.addEventListener("click", generateSummary);
+    generateSummaryBtn.addEventListener("click", generateSummaryClicked);
     let saveSummaryBtn = document.getElementById("general-comments-save");
     saveSummaryBtn.addEventListener("click", saveGeneralComments);
     let uc = getCurrentUC();
@@ -854,10 +870,39 @@ function viewSummaryButtonClicked(e) {
     }
 }
 
-function generateSummary(e) {
-    e.preventDefault();
-    let allIssues = issuesMap(getCurrentUC());
+function generateSummaryClicked(e) {
+    let uc = getCurrentUC();
+    generateSummary(uc);
+}
 
+function overallCommentsClicked(e) {
+    e.preventDefault();
+    console.log(`overallCommentsClicked: `);
+    const overallCommentsDialog = document.getElementById("view-overall-comments-dialog");
+    const overallCommentsDialogClose = document.getElementById("view-overall-comments-dialog-close");
+    overallCommentsDialogClose.addEventListener("click", (e) => {
+        e.preventDefault();
+        overallCommentsDialog.close();
+    });
+    overallCommentsDialog.showModal();
+    let commentsText = "";
+    const overallCommentsTextarea = document.getElementById("overall-comments");
+
+    evaluation.evalUCs.forEach((uc, ucIndex) => {
+        commentsText += `${ucIndex + 1}. ${uc.name}\n\n`;
+        if (uc.comments === undefined || uc.comments.length === 0) {
+            commentsText += "No issues.";
+        } else {
+            commentsText += uc.comments.join("\n\n");
+        }
+        commentsText += "\n\n";
+    });
+    console.log(`commentsText = ${commentsText}`);
+    overallCommentsTextarea.value = commentsText;
+}
+
+function generateSummary() {
+    let allIssues = issuesMap(getCurrentUC());
     let summaryText = "";
     let issueString = "";
     let banner = ["Stoppers:", "Major Issues:", "Minor Issues", "Advisory"];
