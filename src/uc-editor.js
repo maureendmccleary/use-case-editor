@@ -1,3 +1,6 @@
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+
 const defaults = {
     "os-types": {
         "windows": {
@@ -145,6 +148,8 @@ function evalViewResultsButtonClicked(e) {
     renderEvalResults();
     let overallCommentsBtn = document.getElementById("view-overall-comments");
     overallCommentsBtn.addEventListener("click", overallCommentsClicked);
+    const generatePDFBtn = document.getElementById("generate-pdf");
+    generatePDFBtn.addEventListener("click", renderEvalResultsPDF);
 }
 
 function editUseCaseButtonClicked(e) {
@@ -1158,6 +1163,72 @@ function initialize() {
     document.getElementById("uc-file-save").removeAttribute("disabled");
     document.getElementById("uc-perform").addEventListener('click', performButtonClick);
     document.getElementById("uc-new-step").addEventListener('click', newStepButtonClick);
+}
+
+function renderEvalResultsPDF() {
+    const docDefinition = {
+        content: [
+            { text: 'Significant Issues', style: 'header' },
+            renderUnorderedListForPDF(evaluation.comments, "No issues."),
+            ...evaluation.evalUCs.map(renderUseCaseForPDF)
+        ],
+        styles: {
+            header: { fontSize: 18, bold: true, margin: [0, 10, 0, 10] },
+            subheader: { fontSize: 14, bold: true, margin: [0, 5, 0, 5] },
+            tableHeader: { bold: true, fillColor: '#eeeeee' },
+        },
+        defaultStyle: {
+            fontSize: 12
+        }
+    };
+
+    pdfMake.createPdf(docDefinition).open();
+}
+
+function renderUnorderedListForPDF(listItems, emptyText) {
+    if (!Array.isArray(listItems) || listItems.length === 0) {
+        return { text: emptyText, style: 'subheader' };
+    }
+    return {
+        ul: listItems.map(item => item)
+    };
+}
+
+function renderUseCaseForPDF(uc) {
+    return [
+        { text: `Detailed Use Case Results: ${uc.name}`, style: 'subheader' },
+        {
+            text: `Assistive Technology: ${uc.ats}\nGoal: ${uc.goal}\nOperator: ${uc.tester}\nStart Location: ${uc.startlocation}\nOperating System: ${uc.oses}`,
+            margin: [0, 5, 0, 5]
+        },
+        renderResultsTableForPDF(uc)
+    ];
+}
+
+function renderResultsTableForPDF(uc) {
+    return {
+        table: {
+            headerRows: 1,
+            widths: ['auto', '*', 'auto', '*'],
+            body: [
+                [
+                    { text: '#', style: 'tableHeader' },
+                    { text: 'Main Success Case', style: 'tableHeader' },
+                    { text: 'Score', style: 'tableHeader' },
+                    { text: 'Issues Encountered', style: 'tableHeader' }
+                ],
+                ...uc.steps.map((step, index) => [
+                    index + 1,
+                    step.instructions,
+                    step.issues.length > 0 ? step.issues.map(i => i.score).join(', ') : "5",
+                    step.issues.length > 0 ? step.issues.map(i => `• ${i.description}`).join('\n') : "• No issues"
+                ])
+            ]
+        },
+        layout: {
+            fillColor: (rowIndex) => rowIndex % 2 === 0 ? '#f9f9f9' : null
+        }
+    };
 }
 
 initialize();

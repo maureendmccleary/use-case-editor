@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "pdfmake": "^0.2.20",
     "vite": "^6.3.5"
   }
 }
