@@ -38,11 +38,6 @@
                             "description": "NVDA users do not receive status message of \"Maximum of two breeds is allowed\". NVDA users must navigate through the page to locate this message.",
                             "findingURL": "https://olliepets.levelaccess.com/status_messages",
                             "score": "3"
-                        },
-                        {
-                            "description": "NVDA provides an erroneous status message of \"object object has been removed\" after activating delete control.",
-                            "findingURL": "https://olliepets.levelaccess.com/status_messages",
-                            "score": "3"
                         }
                     ]
                 },
@@ -178,6 +173,12 @@
             ],
             "ats": [
                 "NVDA"
+            ],
+            "tester": "",
+            "score": 1,
+            "comments": [
+                "Get Started control cannot be activated.",
+                "NVDA users do not perceive that \"more info\" zip code on Checkout step 4 of 4 page is something that can be activated such as a button."
             ]
         },
         {
@@ -209,6 +210,78 @@
             "ats": [
                 "NVDA"
             ]
+        },
+        {
+            "steps": [
+                {
+                    "instructions": "Navigate to profile and activate it.\n\nNavigate to Manage Subscription and activate it.",
+                    "issues": [
+                        {
+                            "description": "Manage subscription cannot be activated with the keyboard, but a simulated mouse click is required. Most users will not do this.",
+                            "findingURL": "",
+                            "score": "2"
+                        }
+                    ]
+                },
+                {
+                    "instructions": "Activate cancel plan.\n\nVerify a dialog opens.",
+                    "issues": [
+                        {
+                            "description": "NVDA users are not aware of the presence of the cancel dialog when it opens.  ",
+                            "findingURL": "",
+                            "score": "2"
+                        }
+                    ]
+                },
+                {
+                    "instructions": "Select Too expensive in the reason dropdown.\n\nEnter \"Cancel subscription for A11y Test.\" into the message area.\n\nActivated Cancel. ",
+                    "issues": [
+                        {
+                            "description": "It is not possible to make a selection in the reason dropdown.",
+                            "findingURL": "",
+                            "score": "1"
+                        }
+                    ]
+                },
+                {
+                    "instructions": "Verify a cancel confirmation dialog opens.\n\nActivate \"Yes, Cancel\".\n\n",
+                    "issues": [
+                        {
+                            "description": "NVDA users are not aware of the presence of the cancel confirmation dialog when it opens.",
+                            "findingURL": "",
+                            "score": "2"
+                        }
+                    ]
+                },
+                {
+                    "instructions": "Verify a cancelation status message was announce.\n\nRecord confirmation Number.\n",
+                    "issues": [
+                        {
+                            "description": "NVDA users do not receive a status message that the subscription was successfully canceled.",
+                            "findingURL": "",
+                            "score": "3"
+                        },
+                        {
+                            "description": "Since the cancelation confirmation number is communicated with an image missing alt text, NVDA users cannot access this info.",
+                            "findingURL": "",
+                            "score": "1"
+                        }
+                    ]
+                }
+            ],
+            "comments": [
+                "It is not possible to make a selection in the reason dropdown.",
+                "Since the cancelation confirmation number is communicated with an image missing alt text, NVDA users cannot access this info.",
+                "Manage subscription cannot be activated with the keyboard, but a simulated mouse click is required. Most users will not do this.",
+                "NVDA users are not aware of the presence of the cancel dialog when it opens. This same issue applies to the cancelation confirmation dialog."
+            ],
+            "oses": [],
+            "ats": [],
+            "name": "Cancel Subscriptionh",
+            "startlocation": "https://www.myollie.com",
+            "goal": "Successfully cancel subscription",
+            "score": 1,
+            "tester": ""
         }
     ]
 }
