@@ -123,11 +123,12 @@ function fillListbox(jobj, listboxid) {
 }
 
 function renderEvalResults() {
-    let parentDiv = document.getElementById("eval-view-significant-issues");
-    parentDiv.innerHTML = "";
-
+    let overallCommentsDiv = document.getElementById("eval-view-significant-issues");
+    overallCommentsDiv.innerHTML = "";
     const unorderedList = createUnorderedList(evaluation.comments);
-    parentDiv.appendChild(unorderedList);
+    overallCommentsDiv.appendChild(unorderedList);
+    let parentDiv = document.getElementById("eval-view-use-case-issues");
+    parentDiv.innerHTML = "";
 
     evaluation.evalUCs.forEach(uc => {
         let resultsDiv = document.createElement("div");
@@ -895,12 +896,11 @@ function overallCommentsSaveClicked(e) {
         .map(comment => comment.trim())
         .filter(comment => comment !== "");
 
-        renderEvalResults();
+    renderEvalResults();
 }
 
 function overallCommentsClicked(e) {
     e.preventDefault();
-    console.log(`overallCommentsClicked: `);
     const overallCommentsDialog = document.getElementById("view-overall-comments-dialog");
     const overallCommentsDialogClose = document.getElementById("view-overall-comments-dialog-close");
     const overallCommentsSaveBtn = document.getElementById("overall-comments-save");
@@ -910,18 +910,24 @@ function overallCommentsClicked(e) {
         overallCommentsDialog.close();
     });
     overallCommentsDialog.showModal();
-    let commentsText = "";
     const overallCommentsTextarea = document.getElementById("overall-comments");
+    let commentsText = "";
+    if (evaluation.comments) {
+        commentsText = evaluation.comments.join("\n\n");
+    }
+    else {
+        commentsText = "";
 
-    evaluation.evalUCs.forEach((uc, ucIndex) => {
-        commentsText += `${ucIndex + 1}. ${uc.name}\n\n`;
-        if (!Array.isArray(uc.comments) || uc.comments.length === 0) {
-            commentsText += "No issues.";
-        } else {
-            commentsText += uc.comments.join("\n\n");
-        }
-        commentsText += "\n\n";
-    });
+        evaluation.evalUCs.forEach((uc, ucIndex) => {
+            commentsText += `${ucIndex + 1}. ${uc.name}\n\n`;
+            if (!Array.isArray(uc.comments) || uc.comments.length === 0) {
+                commentsText += "No issues.";
+            } else {
+                commentsText += uc.comments.join("\n\n");
+            }
+            commentsText += "\n\n";
+        });
+    }
     console.log(`commentsText = ${commentsText}`);
     overallCommentsTextarea.value = commentsText;
 }
@@ -1023,7 +1029,6 @@ function viewResultsButtonClicked(e) {
     parentDiv.appendChild(resultsDiv);
 }
 
- 
 function createUnorderedList(listItems, emptyText) {
     if (!Array.isArray(listItems) || listItems.length === 0) {
         const paragraphElem = document.createElement("p");
@@ -1041,18 +1046,7 @@ function createUnorderedList(listItems, emptyText) {
     return list;
 }
 
-
 function createResultsTable(uc, resultsDiv) {
-    let h2Heading = document.createElement("h2");
-    h2Heading.textContent = "Significant Issues";
-    resultsDiv.appendChild(h2Heading);
-    let p1 = document.createElement("p");
-    let score = minimumScore(issuesMap(uc));
-    p1.innerHTML = `${uc.ats} Overall Rating: ${score}`;
-    resultsDiv.appendChild(p1);
-    let topIssues = document.createElement("ul");
-    addTopIssues(topIssues, uc);
-    resultsDiv.appendChild(topIssues);
     let ucName = document.createElement("h2");
     ucName.innerHTML = `Detailed Use Case Results: ${uc.name}`;
     resultsDiv.appendChild(ucName);
@@ -1063,7 +1057,6 @@ function createResultsTable(uc, resultsDiv) {
     p2.innerHTML += `Start Location: ${uc.startlocation}<br>`;
     p2.innerHTML += `Operating System: ${uc.oses}<br><br>`;
     resultsDiv.appendChild(p2);
-
     var resultsTable = document.createElement("table");
     var rowHeading = resultsTable.insertRow(-1);
     var stepNumberCol = document.createElement("th");
@@ -1108,6 +1101,16 @@ function createResultsTable(uc, resultsDiv) {
         descriptionCell = "";
     });
     resultsDiv.appendChild(resultsTable);
+    let h2Heading = document.createElement("h2");
+    h2Heading.textContent = "Problem Summary";
+    resultsDiv.appendChild(h2Heading);
+    let p1 = document.createElement("p");
+    let score = minimumScore(issuesMap(uc));
+    p1.innerHTML = `${uc.ats} Overall Rating: ${score}`;
+    resultsDiv.appendChild(p1);
+    let topIssues = document.createElement("ul");
+    addTopIssues(topIssues, uc);
+    resultsDiv.appendChild(topIssues);
     return resultsDiv;
 }
 
@@ -1152,6 +1155,8 @@ function initialize() {
     loadEvalButton.addEventListener("click", loadEvalButtonClicked);
     const evalViewResultsButton = document.getElementById("eval-view-results");
     evalViewResultsButton.addEventListener("click", evalViewResultsButtonClicked);
+    let saveEvalButton = document.getElementById("eval-save-file");
+    saveEvalButton.addEventListener("click", saveFileButtonClick);
     const editUseCaseButton = document.getElementById("edit-uc");
     editUseCaseButton.addEventListener("click", editUseCaseButtonClicked);
     const newUseCaseButton = document.getElementById("new-uc");
@@ -1168,7 +1173,7 @@ function initialize() {
 function renderEvalResultsPDF() {
     const docDefinition = {
         content: [
-            { text: 'Significant Issues', style: 'header' },
+            { text: 'Problem Summary', style: 'header' },
             renderUnorderedListForPDF(evaluation.comments, "No issues."),
             ...evaluation.evalUCs.map(renderUseCaseForPDF)
         ],
