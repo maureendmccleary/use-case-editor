@@ -46,11 +46,16 @@
       <input name="startlocation" type="text" id="uc-edit-startlocation">
       <br>
       <br>
-      <label for="uc-edit-oses">Operating Systems: </label>
-      <select name="oses" id="uc-edit-oses" multiple></select>
-      <label for="uc-edit-ats">Assistive Technology Types: </label>
-      <select name="ats" id="uc-edit-ats" multiple>
-      </select>
+      <button id="uc-edit-oses-btn" aria-expanded="false" aria-controls="uc-edit-oses-menu">
+        Operating Systems
+      </button>
+      <div id="uc-edit-oses-menu" role="menu" tabindex="0" hidden></div>
+
+      <button id="uc-edit-ats-btn" aria-expanded="false" aria-controls="uc-edit-ats-menu">
+        Assistive Technology
+      </button>
+      <div id="uc-edit-ats-menu" role="menu" tabindex="0" hidden></div>
+
       <br>
       <br>
     </div>
@@ -148,6 +153,7 @@
       <label for="overall-comments">Overall Comments</label>
       <textarea class="large-textarea" id="overall-comments"></textarea>
       <br><br>
+      <button type="button" id="generate-overall-comments" type="button">Generate Overall Comments</button>
       <button type="button" id="overall-comments-save">Save </button>
     </form>
   </dialog>
@@ -241,9 +247,42 @@
           instructed to artificially get past the point(s) of failure, such as by getting the assistance of a
           non-disabled colleague. This explains why there may be problems noted in use case steps past a stopper.
         </p>
-      </div>
+        <table>
+          <tr>
+            <th scope="col">Score</th>
+            <th scope="col">Title</th>
+            <th scope="col">Definition</th>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>Pass with no accessibility problems</td>
+            <td>The use case is a complete success. No accessibility problems are found to hinder its completion.</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>Pass with recommended optimizations</td>
+            <td>The use case is readily completed, but a slight modification would make it easier or more reliably accessible.</td>
+          </tr>
+          <tr>
+          <td>3</td>
+          <td>Pass with minor accessibility problems</td>
+          <td>One or more minor accessibility problems makes completion of the use case more challenging than it should be.</td>
+          </tr>
+          <tr>
+            <td>2</td>
+<td>Fail with major accessibility problems</td>
+<td>One or more major accessibility problems that would hinder people with disabilities’ ability to complete the use case.</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>Fail with severe accessibility problems</td>
+            <td>The use case cannot be completed due to one or more major accessibility problems.</td>
+          </tr>
+          </table>
+              </div>
       <div id="eval-view-use-case-issues"></div>
     </form>
   </dialog>
 </body>
+
 </html>

@@ -100,6 +100,25 @@ function emptyUC() {
     };
 }
 
+function fillCheckboxMenu(jobj, checkboxMenuId, name) {
+    let checkBoxMenu = document.getElementById(checkboxMenuId);
+    let checkBox = null;
+
+    for (let key in jobj) {
+        checkBox = document.createElement('input');
+        checkBox.type = "checkbox";
+        checkBox.name = name;
+        checkBox.value = jobj[key]["friendly-name"];
+        checkBox.id = `uc-edit-${key}-chk`;
+        let checkLabel = document.createElement("label");
+        checkLabel.textContent = jobj[key]["friendly-name"];
+        checkLabel.htmlFor = checkBox.id;
+        checkLabel.appendChild(checkBox);
+        checkBoxMenu.appendChild(checkLabel);
+        checkBoxMenu.appendChild(document.createElement("br"));
+    }
+}
+
 function fillListbox(jobj, listboxid) {
     let lbx = document.getElementById(listboxid);
     let elem = null;
@@ -215,26 +234,49 @@ async function populateEditor() {
     let uc = getCurrentUC();
     document.getElementById("uc-edit-startlocation").value = uc.startlocation;
     document.getElementById("uc-edit-name").focus();
-
     document.getElementById("uc-edit-name").value = uc.name;
     document.getElementById("uc-edit-goal").value = uc.goal;
 
-    var osOptions = document.getElementById("uc-edit-oses");
+    const osMenuBtn = document.getElementById('uc-edit-oses-btn');
+    osMenuBtn.addEventListener("click", toggleMenu);
+    var osMenu = document.getElementById("uc-edit-oses-menu");
+    var osOptions = osMenu.querySelectorAll("label");
+
     for (var i = 0; i < uc.oses.length; i++) {
         for (var j = 0; j < osOptions.length; j++) {
-            if (uc.oses[i] == osOptions[j].textContent) {
-                osOptions[j].selected = true;
+            var checkbox = osOptions[j].querySelector("input[type='checkbox']");
+            if (uc.oses[i] === osOptions[j].textContent.trim()) {
+                checkbox.checked = true;
             }
         }
     }
-    var atOptions = document.getElementById("uc-edit-ats");
+    osMenu.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+            osMenuBtn.setAttribute("aria-expanded", "false");
+            osMenu.hidden = true;
+            osMenuBtn.focus(); // Return focus to button
+        }
+    });
+    const atMenuBtn = document.getElementById('uc-edit-ats-btn');
+    atMenuBtn.addEventListener("click", toggleMenu);
+    var atMenu = document.getElementById("uc-edit-ats-menu");
+    var atOptions = atMenu.querySelectorAll("label");
+
     for (var i = 0; i < uc.ats.length; i++) {
         for (var j = 0; j < atOptions.length; j++) {
-            if (uc.ats[i] == atOptions[j].textContent) {
-                atOptions[j].selected = true;
+            var checkbox = atOptions[j].querySelector("input[type='checkbox']");
+            if (uc.ats[i] === atOptions[j].textContent.trim()) {
+                checkbox.checked = true;
             }
         }
     }
+    atMenu.addEventListener('keydown', (e) => {
+        if (e.key === "Escape") {
+            atMenuBtn.setAttribute("aria-expanded", "false");
+            atMenu.hidden = true;
+            atMenuBtn.focus(); // Return focus to button
+        }
+    });
     let stepParentDiv = document.getElementById("uc-step-parent-div");
     stepParentDiv.innerHTML = "";
     let populatedDiv = document.createElement("div");
@@ -244,7 +286,6 @@ async function populateEditor() {
     while (summaryList.firstChild) {
         summaryList.removeChild(summaryList.firstChild);
     }
-    console.log(`uc.comments.length = ${uc.comments.length}`);
     if (uc.comments && uc.comments.length > 0) {
         uc.comments.forEach((comment, i) => {
             let summaryLi = document.createElement("LI");
@@ -259,12 +300,20 @@ async function populateEditor() {
     }
 }
 
+function toggleMenu(e) {
+    const isExpanded = e.target.getAttribute('aria-expanded') === 'true';
+
+    e.target.setAttribute('aria-expanded', !isExpanded);
+    const controlsTargetId = e.target.getAttribute("aria-controls");
+    const controlsTarget = document.getElementById(controlsTargetId);
+    controlsTarget.hidden = isExpanded;
+}
+
 function renderSteps(uc) {
     let stepParentDiv = document.createElement("div");
 
     for (let i = 0; i < uc.steps.length; i++) {
         let stepDiv = document.createElement("div");
-        //console.log(`uc.steps[${i}].instructions = ${uc.steps[i].instructions}`);
         stepDiv = addStepToEditor(i);
         stepParentDiv.appendChild(stepDiv);
     }
@@ -707,7 +756,6 @@ function createStepForEditor(stepNumber) {
     newStep.setAttribute("id", getStepId(stepNumber));
     newStep.setAttribute("class", "step-contents");
     newStep.value = uc.steps[stepNumber].instructions;
-    //console.log(`createStepForEditor: ${uc.steps[stepNumber].instructions}`);
     newStep.setAttribute("name", "steps");
     newStep.addEventListener('blur', blurFormField);
     return newStep;
@@ -822,11 +870,12 @@ function blurFormField(e) {
 }
 
 function changeFormField(e) {
-    uc[e.target.name] = [];
-    var selectedOptions = e.target.selectedOptions;
-    for (var i = 0; i < selectedOptions.length; i++) {
-        var optionText = selectedOptions[i].text;
-        uc[e.target.name].push(optionText);
+    let uc = evaluation.evalUCs[ucNumber];
+    console.log(`e.target.name = ${e.target.name}`);
+    console.log(`e.target.value = ${e.target.value}`);
+    if 
+    (e.target.checked && !uc[e.target.name].includes(e.target.value)) {
+        uc[e.target.name].push(e.target.value);
     }
 }
 
@@ -845,9 +894,9 @@ function addFormEvents() {
     });
     const formelements = form.elements;
     for (let element of formelements) {
-        if (element.tagName == "INPUT" || element.tagName == "TEXTAREA") {
+        if (element.tagName === "INPUT" && element.type !== "checkbox" || element.tagName == "TEXTAREA") {
             element.addEventListener('blur', blurFormField);
-        } else if (element.tagName == "SELECT") {
+        } else if (element.tagName === "INPUT" && element.type === "checkbox" ) {
             element.addEventListener('change', changeFormField);
         }
     }
@@ -903,7 +952,9 @@ function overallCommentsClicked(e) {
     e.preventDefault();
     const overallCommentsDialog = document.getElementById("view-overall-comments-dialog");
     const overallCommentsDialogClose = document.getElementById("view-overall-comments-dialog-close");
+    const generateOverallCommentsBtn = document.getElementById("generate-overall-comments");
     const overallCommentsSaveBtn = document.getElementById("overall-comments-save");
+    generateOverallCommentsBtn.addEventListener("click", generateOverallComments);
     overallCommentsSaveBtn.addEventListener("click", overallCommentsSaveClicked);
     overallCommentsDialogClose.addEventListener("click", (e) => {
         e.preventDefault();
@@ -928,8 +979,25 @@ function overallCommentsClicked(e) {
             commentsText += "\n\n";
         });
     }
-    console.log(`commentsText = ${commentsText}`);
     overallCommentsTextarea.value = commentsText;
+}
+
+function generateOverallComments(e) {
+    e.preventDefault();
+    const overallCommentsTextarea = document.getElementById("overall-comments");
+    let commentsText = "";
+    evaluation.evalUCs.forEach((uc, ucIndex) => {
+        commentsText += `${ucIndex + 1}. ${uc.name}\n\n`;
+        if (!Array.isArray(uc.comments) || uc.comments.length === 0) {
+            commentsText += "No issues.";
+        } else {
+            commentsText += uc.comments.join("\n\n");
+        }
+        commentsText += "\n\n";
+    });
+
+    overallCommentsTextarea.value = commentsText;
+    overallCommentsTextarea.focus();
 }
 
 function generateSummary() {
@@ -956,7 +1024,6 @@ function generateSummary() {
 function saveGeneralComments(e) {
     e.preventDefault();
     let uc = getCurrentUC();
-    console.log(`saveGeneralComments before text area assignment uc.comments.length = ${uc.comments.length}`);
     let summaryList = document.getElementById("summary-list");
     while (summaryList.firstChild) {
         summaryList.removeChild(summaryList.firstChild);
@@ -972,7 +1039,6 @@ function saveGeneralComments(e) {
         let commentsWithoutBanners = commentSummary.replace(/Stoppers|Major Issues|Minor Issues|Advisory/g, "").trim();
         let comments = commentsWithoutBanners.split("\n\n");
         uc.comments = comments;
-        console.log(`saveGeneralComments after text area assignment uc.comments.length = ${uc.comments.length}`);
         uc.comments.forEach((c, i) => {
             let summaryLi = document.createElement("LI");
             summaryLi.innerHTML = c;
@@ -1161,8 +1227,8 @@ function initialize() {
     editUseCaseButton.addEventListener("click", editUseCaseButtonClicked);
     const newUseCaseButton = document.getElementById("new-uc");
     newUseCaseButton.addEventListener("click", newUseCaseButtonClicked);
-    fillListbox(defaults["os-types"], "uc-edit-oses");
-    fillListbox(defaults["at-types"], "uc-edit-ats");
+    fillCheckboxMenu(defaults["os-types"], "uc-edit-oses-menu", "oses");
+    fillCheckboxMenu(defaults["at-types"], "uc-edit-ats-menu", "ats");
     addFormEvents();
     document.getElementById("uc-file-save").addEventListener('click', saveFileButtonClick);
     document.getElementById("uc-file-save").removeAttribute("disabled");

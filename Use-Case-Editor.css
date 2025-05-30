@@ -95,3 +95,7 @@ tr {
 .fa-pencil {
     color: darkgreen;
 }
+.checkboxContainer {
+  display: flex;
+  align-items: center;
+}
