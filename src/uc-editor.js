@@ -873,8 +873,8 @@ function changeFormField(e) {
     let uc = evaluation.evalUCs[ucNumber];
     console.log(`e.target.name = ${e.target.name}`);
     console.log(`e.target.value = ${e.target.value}`);
-    if 
-    (e.target.checked && !uc[e.target.name].includes(e.target.value)) {
+    if
+        (e.target.checked && !uc[e.target.name].includes(e.target.value)) {
         uc[e.target.name].push(e.target.value);
     }
 }
@@ -896,7 +896,7 @@ function addFormEvents() {
     for (let element of formelements) {
         if (element.tagName === "INPUT" && element.type !== "checkbox" || element.tagName == "TEXTAREA") {
             element.addEventListener('blur', blurFormField);
-        } else if (element.tagName === "INPUT" && element.type === "checkbox" ) {
+        } else if (element.tagName === "INPUT" && element.type === "checkbox") {
             element.addEventListener('change', changeFormField);
         }
     }
@@ -1142,7 +1142,7 @@ function createResultsTable(uc, resultsDiv) {
     issueCol.innerHTML = "Issues Encountered";
     rowHeading.appendChild(issueCol);
     var descriptionCell = "";
-    var scoreCell = "";
+    var scoreTotal = 0;
     uc.steps.forEach((step, index) => {
         var row = resultsTable.insertRow(-1);
         var cell1 = row.insertCell(0);
@@ -1152,18 +1152,22 @@ function createResultsTable(uc, resultsDiv) {
         cell1.innerHTML = index + 1;
         cell2.innerHTML = step.instructions;
         cell2.setAttribute("style", "text-align: center");
-        if (!step.issues || step.issues.length === 0) {
-            scoreCell = "5";
-            descriptionCell = "\u2022No issues";
-        }
         step.issues.forEach((issue, index) => {
-            scoreCell += issue.score + "<br>";
+            console.log(`scoreTotal = ${scoreTotal} issue.score = ${issue.score}`);
+            scoreTotal += parseInt(issue.score);
             descriptionCell += "\u2022" + issue.description + "<br>";
         });
-        cell3.innerHTML = scoreCell;
+        if (!step.issues || step.issues.length === 0) {
+            cell3.innerHTML = "5";
+            descriptionCell = "\u2022No issues";
+        }
+        else {
+            console.log(`scoreTotal = ${scoreTotal} / ${step.issues.length} = ${scoreTotal / step.issues.length}`);
+            cell3.innerHTML = Math.floor(scoreTotal / step.issues.length);
+        }
         cell4.innerHTML = descriptionCell;
         cell4.setAttribute("style", "text-align: center");
-        scoreCell = "";
+        scoreTotal = 0;
         descriptionCell = "";
     });
     resultsDiv.appendChild(resultsTable);
